@@ -1,5 +1,5 @@
 /*
- * ESP8266 Template
+ * ESP32 Template
  * Hardware specific setup
  */
 #include <Arduino.h>

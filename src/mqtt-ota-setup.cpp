@@ -1,5 +1,5 @@
 /*
- * ESP8266 Template
+ * ESP32 Template
  * MQTT / OTA specific setup
  */
 #include <Arduino.h>
