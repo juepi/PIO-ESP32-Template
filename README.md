@@ -83,3 +83,9 @@ Include message handling of your topic(s) in the `MqttCallback` function by addi
 ```
 else if (String(topic) == your_defined_topic)
 ```
+
+* `src/main.cpp`  
+Subscribe to your topics by adding `MqttSubscribe` function calls in the `ConnectToBroker` function:
+```
+MqttSubscribe(your_defined_topic);
+```
