@@ -1,5 +1,5 @@
 /*
-*   ESP8266 Template
+*   ESP32 Template
 *   Macro Handling
 */
 #ifndef MACRO_HANDLING_H

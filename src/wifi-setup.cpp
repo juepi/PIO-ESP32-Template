@@ -3,7 +3,7 @@
  * WiFi specific setup
  */
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include "wifi-config.h"
 
 // Define Variables

@@ -1,12 +1,9 @@
 # Introduction 
-A template for ESP8266 programming using VSC + [PlatformIO](https://platformio.org/) supporting MQTT, OTA-flashing, ESP Deep-Sleep and VCC readouts.  
+A template for ESP32 programming using VSC + [PlatformIO](https://platformio.org/) supporting MQTT, OTA-flashing and ESP Deep-Sleep.  
 
 ## Local Requirements
 A (local) MQTT broker is mandatory for OTA-Flashing. With deactivated OTA-flashing, you might remove MQTT functionality.  
 Additionally, personal settings like WIFI SSID and Passphrase will be taken from local environment variables, see `platformio.ini`.  
-
-## Hardware Requirements
-To be able to use DEEP_SLEEP functionality, you will most probably need a small hardware modification for you ESP board: connect pin D0 to RST pin. This will allow the ESP to wake up after the defined sleep time as defined in the `include/generic-config.h` file.  
 
 ## An important notice on MQTT usage
 As the main intention of this program is to run on a MCU that is powered off (sleeping) most of the time, we will **only work with retained messages** here! This ensures that a client subscribing to a topic will receive the last value published "instantly" and does not need to wait for someone to publish "latest news".  
@@ -87,13 +84,3 @@ Include message handling of your topic(s) in the `MqttCallback` function by addi
 ```
 else if (String(topic) == your_defined_topic)
 ```
-  
-
-# Version History
-
-## Initial Release v1.0.0
-ATTN: OTA flashing did not work due to an error in macro handling!
-
-## Release 1.0.1
-- Fixed error in macro handling
-- Speedup receiving messages of subscribed topics

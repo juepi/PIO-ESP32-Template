@@ -1,5 +1,5 @@
 /*
-*   ESP8266 Template
+*   ESP32 Template
 *   Common Function declarations
 */
 #ifndef COMMON_FUNCTIONS_H

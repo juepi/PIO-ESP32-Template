@@ -1,27 +1,17 @@
 /*
- * ESP8266 Template
+ * ESP32 Template
  * ==================
  * 
  * Includes useful functions like
  * - DeepSleep
- * - Read VCC
  * - MQTT
  * - OTA Updates (ATTN: requires MQTT!)
  * 
- * If you use DeepSleep, make sure to connect pin 16 (D0) to RESET, or your ESP will never wake up!
- * Also keep in mind that you can DeepSleep for ~ 1 hour max (hardware limitation)!
- * ATTENTION: Keep in mind that it takes quite a while after the sketch has booted until we receive messages from all subscribed topics!
- * In my case it takes up to 27 seconds (see WAIT_MILLIS_FOR_TOPICS_AFTER_BOOT).
- * To get OTA update working on windows + Arduino-IDE, you need to install python and python.exe needs to be in %PATH%
- * First flash needs to be wired of course. Afterwards Arduino IDE needs to be restarted if you cannot find
- * the ESP OTA-port in the IDE (also MQTT ota_topic needs to be set to "on" to be able to flash OTA).
- * Keep in mind that you'll need a reliable power source for OTA updates, 2x AA batteries might not work.
- * If you brick your ESP during OTA update, you can probably revive it by flashing it wired.
  */
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
+#include <WiFi.h>
+#include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <PubSubClient.h>
@@ -115,6 +105,9 @@ void setup()
   digitalWrite(LED, LEDOFF);
 #endif
 
+  // hardware specific setup
+  hardware_setup();
+
   // Startup WiFi
   wifi_setup();
 
@@ -144,11 +137,11 @@ void setup()
 #ifdef ONBOARD_LED
     ToggleLed(LED, 100, 40);
 #endif
-#ifdef DEEP_SLEEP
+#ifdef E32_DEEP_SLEEP
     ESP.deepSleep(DS_DURATION_MIN * 60000000);
     delay(3000);
 #else
-    ESP.reset();
+    ESP.restart();
 #endif
     delay(1000);
   }
@@ -199,11 +192,11 @@ void loop()
 #ifdef ONBOARD_LED
       ToggleLed(LED, 100, 40);
 #endif
-#ifdef DEEP_SLEEP
+#ifdef E32_DEEP_SLEEP
       ESP.deepSleep(DS_DURATION_MIN * 60000000);
       delay(3000);
 #else
-      ESP.reset();
+      ESP.restart();
 #endif
     }
   }
@@ -277,12 +270,15 @@ void loop()
 #endif
 
   // Read VCC and publish to MQTT
-  delay(300);
-  VCC = ((float)ESP.getVcc()) / VCCCORRDIV;
+  // Might not work correctly!
+  VCC = VDIV * VFULL_SCALE * float(analogRead(VBAT_ADC_PIN)) / 4095.0f;
   mqttClt.publish(vcc_topic, String(VCC).c_str(), true);
+  DEBUG_PRINTLN("VCC = " + String(VCC) + " V");
+  DEBUG_PRINT("Raw ADC Pin readout: ");
+  DEBUG_PRINTLN(analogRead(VBAT_ADC_PIN));
   delay(100);
 
-#ifdef DEEP_SLEEP
+#ifdef E32_DEEP_SLEEP
   // disconnect WiFi and go to sleep
   DEBUG_PRINTLN("Good night for " + String(DS_DURATION_MIN) + " minutes.");
   WiFi.disconnect();

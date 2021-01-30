@@ -1,5 +1,5 @@
 /*
-*   ESP8266 Template
+*   ESP32 Template
 *   MQTT and OTA-Flash Settings
 */
 #ifndef MQTT_OTA_CONFIG_H

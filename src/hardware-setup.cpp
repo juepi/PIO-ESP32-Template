@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include "hardware-config.h"
 
-// Set ADC mode to read VCC (Attn: Pin A0 must be floating!)
-// ==========================================================
-ADC_MODE(ADC_VCC);
+// Variables that should be saved during DeepSleep
+#ifdef KEEP_RTC_SLOWMEM
+RTC_DATA_ATTR int SaveMe = 0;
+#endif

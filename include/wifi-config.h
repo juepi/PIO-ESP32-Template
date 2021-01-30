@@ -1,12 +1,12 @@
 /*
-*   ESP8266 Template
+*   ESP32 Template
 *   WiFi Settings
 */
 #ifndef WIFI_CONFIG_H
 #define WIFI_CONFIG_H
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include "macro-handling.h"
 
 // WiFi CLient object name
@@ -16,8 +16,8 @@
 // ====================
 // CAUTION: Light sleep might disconnect you from broker during sketch execution!
 // Handle with care!
-#define WIFISLEEP WIFI_NONE_SLEEP
-//#define WIFISLEEP WIFI_LIGHT_SLEEP
+#define WIFISLEEP WIFI_PS_NONE
+//#define WIFISLEEP WIFI_PS_MIN_MODEM
 
 // WiFi Connection Timeout (milliseconds)
 // Reset or go to sleep after timeout

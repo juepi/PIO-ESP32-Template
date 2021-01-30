@@ -1,16 +1,15 @@
 /*
-*   ESP8266 Template
+*   ESP32 Template
 *   Firmware, DeepSleep and Serial Settings
 */
 #ifndef GENERIC_CONFIG_H
 #define GENERIC_CONFIG_H
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
 
 // Firmware Information
-#define FIRMWARE_NAME "PIO ESP8266 Template"
-#define FIRMWARE_VERSION "1.0.1"
+#define FIRMWARE_NAME "PIO ESP32 Template"
+#define FIRMWARE_VERSION "1.0.0"
 
 // Serial Output configuration
 //
@@ -25,7 +24,7 @@
 
 // ESP DeepSleep Configuration
 //
-// DeepSleep duration in Minutes (max. 60)
+// DeepSleep duration in Minutes
 #define DS_DURATION_MIN 2
 
 #endif //GENERIC_CONFIG_H

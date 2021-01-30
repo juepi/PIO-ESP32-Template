@@ -4,23 +4,38 @@
  */
 #include <Arduino.h>
 #include "setup-functions.h"
+#include "hardware-config.h"
+
+void hardware_setup()
+{
+    // Setup ADC
+    adc1_config_channel_atten(ADC_CHAN, ADC_ATTENUATION);
+    adc1_config_width(ADC_RESOLUTION);
+
+// Disable all power domains on ESP while in DeepSleep (actually Hibernation)
+// wake up only by RTC
+#ifndef KEEP_RTC_SLOWMEM
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
+#endif
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+}
 
 void wifi_setup()
 {
-    // Set WiFi Sleep Mode
-    WiFi.setSleepMode(WIFISLEEP);
+    // Set WiFi (Modem) Sleep Mode
+    WiFi.setSleep(WIFISLEEP);
 
     // Set WiFi Hostname
-    WiFi.hostname(WIFI_DHCPNAME);
+    WiFi.setHostname(WIFI_DHCPNAME);
 
     // Connect to WiFi network
     DEBUG_PRINTLN();
     DEBUG_PRINTLN("Connecting to " + String(ssid));
+    WiFi.mode(WIFI_MODE_STA);
     WiFi.begin(ssid, password);
-    // Next command avoids ESP broadcasting an unwanted ESSID..
-    WiFi.mode(WIFI_STA);
     unsigned long end_connect = millis() + WIFI_CONNECT_TIMEOUT;
-    while (WiFi.status() != WL_CONNECTED)
+    while (! WiFi.isConnected())
     {
         if (millis() >= end_connect)
         {
@@ -29,11 +44,12 @@ void wifi_setup()
 #ifdef ONBOARD_LED
             ToggleLed(LED, 1000, 4);
 #endif
-#ifdef DEEP_SLEEP
+#ifdef E32_DEEP_SLEEP
+            DEBUG_PRINTLN("Good night for " + String(DS_DURATION_MIN) + " minutes.");
             ESP.deepSleep(DS_DURATION_MIN * 60000000);
             delay(3000);
 #else
-            ESP.reset();
+            ESP.restart();
 #endif
         }
         delay(500);
