@@ -56,7 +56,7 @@ extern bool SentOtaIPtrue;
 #endif
 
 // Topic where VCC will be published
-#define vcc_topic TOPTREE "Vcc"
+#define vcc_topic TOPTREE "Vbat"
 extern float VCC;
 
 #endif //MQTT_OTA_CONFIG_H

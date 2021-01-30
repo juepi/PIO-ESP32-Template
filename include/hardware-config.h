@@ -12,24 +12,23 @@
 #ifdef WEMOS_LOLIN32
 // Onboard LED
 #define LED 5
-// LED is inverted on board
+// LED is active low
 #define LEDON LOW
 #define LEDOFF HIGH
 
 // Pin used for reading VCC (ADC1 channel 7, Pin 35)
 // ==================================================
-// ATTN: i have no idea how this supposed to work, as it seems that there is no
-// reference voltage (other than VCC, which is useless of course) for the ADC
-// with 6dB attenuation Full Scale voltage *should be* 2.2V... use 100k/100k voltage divider (factor 2) on board
+// LOLIN32 uses 100k/27k voltage divider (factor 4.7) on board
 // DOCS: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc.html
 // and: https://randomnerdtutorials.com/esp32-adc-analog-read-arduino-ide/
-// BOARD: https://www.wemos.cc/en/latest/_static/files/sch_d32_v1.0.0.pdf
-#define VDIV 2.0f
-#define VFULL_SCALE 2.2f
+// BOARD: https://metalab.at/wiki/Wemos_LOLIN32
 #define VBAT_ADC_PIN 35
+#define VDIV 4.7f
+#define ADC_ATTENUATION ADC_ATTEN_DB_0
+#define VFULL_SCALE 1.1f
 #define ADC_CHAN ADC1_CHANNEL_7
 #define ADC_RESOLUTION ADC_WIDTH_BIT_12
-#define ADC_ATTENUATION ADC_ATTEN_DB_6
+#define ADC_MAXVAL 4095
 
 #endif //WEMOS_LOLIN32
 

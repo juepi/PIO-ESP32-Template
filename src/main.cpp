@@ -271,7 +271,7 @@ void loop()
 
   // Read VCC and publish to MQTT
   // Might not work correctly!
-  VCC = VDIV * VFULL_SCALE * float(analogRead(VBAT_ADC_PIN)) / 4095.0f;
+  VCC = VDIV * VFULL_SCALE * float(analogRead(VBAT_ADC_PIN)) / ADC_MAXVAL;
   mqttClt.publish(vcc_topic, String(VCC).c_str(), true);
   DEBUG_PRINTLN("VCC = " + String(VCC) + " V");
   DEBUG_PRINT("Raw ADC Pin readout: ");

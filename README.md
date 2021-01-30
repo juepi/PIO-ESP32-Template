@@ -1,5 +1,5 @@
 # Introduction 
-A template for ESP32 programming using VSC + [PlatformIO](https://platformio.org/) supporting MQTT, OTA-flashing and ESP Deep-Sleep.  
+A template for ESP32 programming using VSC + [PlatformIO](https://platformio.org/) supporting MQTT, OTA-flashing, Battery supply voltage readout and ESP Deep-Sleep.  
 
 ## Local Requirements
 A (local) MQTT broker is mandatory for OTA-Flashing. With deactivated OTA-flashing, you might remove MQTT functionality.  
@@ -26,10 +26,9 @@ This is a helper flag topic required by the ESP.
 * `topic/tree/OTAstatus` - default Message: none  
 The ESP will publish OTA status strings here. No need to pre-create this topic, sketch does not subscribe to it (only publish).
 
-* `topic/tree/Vcc` - default Message: none  
-The sketch will publish the voltage measured on the 3.3V supply here. Note that the accuracy is quite low, but it is good enough to detect if the battery is running low when you supply the ESP in example by a LiFePo4 accumulator directly on the 3.3V pin.  
-If you want to improve accuracy, measure the actual voltage with a multimeter and adopt the `VCCCORRDIV` in the `hardware-setup.h` file.  
-Note that we do not subscribe to this topic, we only publish to it.
+* `topic/tree/Vbat` - default Message: none  
+The sketch will publish the voltage measured on the configured ADC pin here. Note that we do not subscribe to this topic, we only publish to it.  
+**ATTENTION**: I'm unsure if reading the battery voltage works correctly - not yet tested (had some problems in the past with voltage readings on ESP32).
 
 ### Importance of `ClientName` Setting
 Note that the `ClientName` configured in the `platformio.ini` file will also be used as the hostname reported to your DHCP server when the ESP fetches an IP-address. This is especially important, as OTA-flashing will also require your networking environment to be able to resolve this hostname to the ESP's IP-address!  
