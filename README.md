@@ -1,5 +1,5 @@
 # Introduction 
-A template for ESP32 programming using VSC + [PlatformIO](https://platformio.org/) supporting MQTT, OTA-flashing, Battery supply voltage readout and ESP Deep-Sleep.  
+A template for ESP32 programming using VSC + [PlatformIO](https://platformio.org/) supporting MQTT, OTA-flashing, Battery supply voltage readout (possibly not yet working) and ESP Deep-Sleep.  
 
 ## Local Requirements
 A (local) MQTT broker is mandatory for OTA-Flashing. With deactivated OTA-flashing, you might remove MQTT functionality.  
@@ -7,11 +7,11 @@ Additionally, personal settings like WIFI SSID and Passphrase will be taken from
 
 ## An important notice on MQTT usage
 As the main intention of this program is to run on a MCU that is powered off (sleeping) most of the time, we will **only work with retained messages** here! This ensures that a client subscribing to a topic will receive the last value published "instantly" and does not need to wait for someone to publish "latest news".  
-**ATTENTION**: The current version **requires** retained messages for **all topics you subscribe to!** Not having retained message for a subscribed topic will lead to an endless loop until a message is being received. This behavior has been set up to speed up receiving messages for all subscribed topics after initiating the connection to the MQTT broker.
+**ATTENTION**: The current version **requires** retained messages for **all topics you subscribe to!** Not having retained message for a subscribed topic will lead to an endless loop until a message is being received. This behavior has been set up to speed up receiving messages for all subscribed topics after initiating the connection to the MQTT broker (to minimize sketch runtime / maximize battery lifetime).
 
 ## Configuration
 In addition to the `platformio.ini` file, see header files in the `include/` folder for additional settings.  
-Configureable settings should be documented well enough there - hopefully ;-)
+Configureable settings (`include/*-config.h`) should be documented well enough there - hopefully ;-)
 
 ### MQTT Topics used
 In order to run OTA updates, you will need at least the following MQTT topics on your broker (case sensitive) to be pre-created with the default retained message so ESP can subscribe to them:
@@ -50,7 +50,7 @@ Deactivate OTA-flashing in the board specific area:
 ;upload_port = ${common_env_data.upload_port}
 ;upload_flags = ${common_env_data.upload_flags}
 ```
-* Adopt board info and hardware settings in `include/hardware-config.h` if needed
+* Adopt board info (`platformio.ini`) and hardware settings in `include/hardware-config.h` if needed
 * Compile and flash
 
 **To re-flash the sketch OTA:**
@@ -75,7 +75,7 @@ If you want to add your own MQTT topic subscription, you will need to adopt the 
 * `include/mqtt-ota-config.h`  
 Define/declare your topic along with required vars here.  
 
-* `src/mqtt-ota-setup.cpp`  
+* `src/setup.cpp`  
 Define initial values of your vars here.  
 
 * `src/common-functions.cpp`  
@@ -84,8 +84,19 @@ Include message handling of your topic(s) in the `MqttCallback` function by addi
 else if (String(topic) == your_defined_topic)
 ```
 
-* `src/main.cpp`  
+* `src/common-functions.cpp`  
 Subscribe to your topics by adding `MqttSubscribe` function calls in the `ConnectToBroker` function:
 ```
 MqttSubscribe(your_defined_topic);
 ```
+
+### Adding your own code to the sketch main loop
+Add your desired functionality to the main loop (`src/main.cpp`) at the commented section.  
+
+# Version History
+
+## Release v1.0.0
+Initial Release
+
+## Release 1.0.1
+- Major code cleanup

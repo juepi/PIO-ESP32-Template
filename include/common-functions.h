@@ -1,17 +1,21 @@
 /*
-*   ESP32 Template
-*   Common Function declarations
-*/
+ *   ESP32 Template
+ *   Common Function declarations
+ */
 #ifndef COMMON_FUNCTIONS_H
 #define COMMON_FUNCTIONS_H
 
 #include <Arduino.h>
-#include "wifi-config.h"
 #include "mqtt-ota-config.h"
-#include "generic-config.h"
-#include "hardware-config.h"
 
-void ToggleLed(int PIN, int WaitTime, int Count);
-void MqttCallback(char *topic, byte *payload, unsigned int length);
+// Declare common functions
+extern void ToggleLed(int PIN, int WaitTime, int Count);
+extern void MqttCallback(char *topic, byte *payload, unsigned int length);
+extern bool MqttSubscribe(const char *Topic);
+extern bool MqttConnectToBroker();
+extern void MqttUpdater();
+#ifdef OTA_UPDATE
+extern bool OTAUpdateHandler();
+#endif
 
-#endif //COMMON_FUNCTIONS_H
+#endif // COMMON_FUNCTIONS_H

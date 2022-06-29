@@ -1,12 +1,10 @@
 /*
-*   ESP32 Template
-*   WiFi Settings
-*/
+ *   ESP32 Template
+ *   WiFi Settings
+ */
 #ifndef WIFI_CONFIG_H
 #define WIFI_CONFIG_H
 
-#include <Arduino.h>
-#include <WiFi.h>
 #include "macro-handling.h"
 
 // WiFi CLient object name
@@ -31,4 +29,4 @@ extern const char *password;
 // DHCP Hostname to report
 #define WIFI_DHCPNAME TEXTIFY(CLTNAME)
 
-#endif //WIFI_CONFIG_H
+#endif // WIFI_CONFIG_H

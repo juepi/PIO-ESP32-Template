@@ -2,9 +2,35 @@
  * ESP32 Template
  * Setup Functions
  */
-#include <Arduino.h>
-#include "setup-functions.h"
-#include "hardware-config.h"
+#include "setup.h"
+
+// Define WiFi Variables
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PSK;
+
+// Define MQTT and OTA-update Variables
+char message_buff[20];
+#ifdef OTA_UPDATE
+bool OTAupdate = false;
+bool SentUpdateRequested = false;
+bool OtaInProgress = false;
+bool OtaIPsetBySketch = false;
+bool SentOtaIPtrue = false;
+#endif
+float VCC = 3.333;
+unsigned int SubscribedTopics = 0;
+unsigned int ReceivedTopics = 0;
+
+// Variables that should be saved during DeepSleep
+#ifdef KEEP_RTC_SLOWMEM
+RTC_DATA_ATTR int SaveMe = 0;
+#endif
+
+// Setup WiFi instance
+WiFiClient WIFI_CLTNAME;
+
+// Setup PubSub Client instance
+PubSubClient mqttClt(MQTT_BROKER, 1883, MqttCallback, WIFI_CLTNAME);
 
 void hardware_setup()
 {
@@ -35,7 +61,7 @@ void wifi_setup()
     WiFi.mode(WIFI_MODE_STA);
     WiFi.begin(ssid, password);
     unsigned long end_connect = millis() + WIFI_CONNECT_TIMEOUT;
-    while (! WiFi.isConnected())
+    while (!WiFi.isConnected())
     {
         if (millis() >= end_connect)
         {
@@ -71,10 +97,11 @@ void wifi_setup()
 void ota_setup()
 {
     // Setup OTA Updates
-    //ATTENTION: calling MQTT Publish function inside ArduinoOTA functions MIGHT NOT WORK!
+    // ATTENTION: calling MQTT Publish function inside ArduinoOTA functions MIGHT NOT WORK!
     ArduinoOTA.setHostname(OTA_CLTNAME);
     ArduinoOTA.setPassword(OTA_PWD);
-    ArduinoOTA.onStart([]() {
+    ArduinoOTA.onStart([]()
+                       {
         String type;
         if (ArduinoOTA.getCommand() == U_FLASH)
         {
@@ -83,28 +110,63 @@ void ota_setup()
         else
         { // U_SPIFFS
             type = "filesystem";
-        }
-    });
-    ArduinoOTA.onEnd([]() {
+        } });
+    ArduinoOTA.onEnd([]()
+                     {
 #ifdef ONBOARD_LED
-        ToggleLed(LED, 200, 4);
+                         ToggleLed(LED, 200, 4);
 #else
-        //ATTENTION: calling MQTT Publish function here does NOT WORK!
-        delay(200);
+                         // ATTENTION: calling MQTT Publish function here does NOT WORK!
+                         delay(200);
 #endif
-    });
-    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+                     });
+    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
+                          {
         int percentComplete = (progress / (total / 100));
         if (percentComplete == 100)
         {
             DEBUG_PRINTLN("Upload complete.");
             delay(500);
-        }
-    });
-    ArduinoOTA.onError([](ota_error_t error) {
+        } });
+    ArduinoOTA.onError([](ota_error_t error)
+                       {
         DEBUG_PRINTLN("Error: " + String(error));
-        delay(500);
-    });
+        delay(500); });
     ArduinoOTA.begin();
 }
 #endif
+
+/*
+ * Setup
+ * ========================================================================
+ */
+void setup()
+{
+// start serial port and digital Outputs
+#ifdef SERIAL_OUT
+    Serial.begin(BAUD_RATE);
+#endif
+    DEBUG_PRINTLN();
+    DEBUG_PRINTLN(FIRMWARE_NAME);
+    DEBUG_PRINTLN(FIRMWARE_VERSION);
+#ifdef ONBOARD_LED
+    pinMode(LED, OUTPUT);
+    digitalWrite(LED, LEDOFF);
+#endif
+
+    // hardware specific setup
+    hardware_setup();
+
+    // Startup WiFi
+    wifi_setup();
+
+    // Setup OTA
+#ifdef OTA_UPDATE
+    ota_setup();
+#endif
+
+#ifdef ONBOARD_LED
+    // Signal setup finished
+    ToggleLed(LED, 200, 6);
+#endif
+}
