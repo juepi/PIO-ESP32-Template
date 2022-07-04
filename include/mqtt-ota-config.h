@@ -55,8 +55,10 @@ extern bool OtaIPsetBySketch;
 extern bool SentOtaIPtrue;
 #endif
 
+#ifdef READVCC
 // Topic where VCC will be published (not yet working with ESP32!)
 #define vcc_topic TOPTREE "Vbat"
 extern float VCC;
+#endif
 
 #endif // MQTT_OTA_CONFIG_H

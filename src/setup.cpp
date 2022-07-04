@@ -17,7 +17,9 @@ bool OtaInProgress = false;
 bool OtaIPsetBySketch = false;
 bool SentOtaIPtrue = false;
 #endif
+#ifdef READVCC
 float VCC = 3.333;
+#endif
 unsigned int SubscribedTopics = 0;
 unsigned int ReceivedTopics = 0;
 
@@ -34,9 +36,11 @@ PubSubClient mqttClt(MQTT_BROKER, 1883, MqttCallback, WIFI_CLTNAME);
 
 void hardware_setup()
 {
+#ifdef READVCC
     // Setup ADC
     adc1_config_channel_atten(ADC_CHAN, ADC_ATTENUATION);
     adc1_config_width(ADC_RESOLUTION);
+#endif
 
 // Disable all power domains on ESP while in DeepSleep (actually Hibernation)
 // wake up only by RTC
@@ -164,6 +168,9 @@ void setup()
 #ifdef OTA_UPDATE
     ota_setup();
 #endif
+
+    // Setup user specific stuff
+    user_setup();
 
 #ifdef ONBOARD_LED
     // Signal setup finished

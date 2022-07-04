@@ -29,13 +29,10 @@ void loop()
   }
 #endif
 
-// START STUFF YOU WANT TO RUN HERE!
-// ============================================
-#ifdef ONBOARD_LED
-  // Toggle LED at each loop
-  ToggleLed(LED, 500, 4);
-#endif
+  // Run user specific loop
+  user_loop();
 
+#ifdef READVCC
   // Read VCC and publish to MQTT
   // Might not work correctly!
   VCC = VDIV * VFULL_SCALE * float(analogRead(VBAT_ADC_PIN)) / ADC_MAXVAL;
@@ -44,6 +41,7 @@ void loop()
   DEBUG_PRINT("Raw ADC Pin readout: ");
   DEBUG_PRINTLN(analogRead(VBAT_ADC_PIN));
   delay(100);
+#endif
 
 #ifdef E32_DEEP_SLEEP
   // disconnect WiFi and go to sleep

@@ -100,3 +100,8 @@ Initial Release
 
 ## Release 1.0.1
 - Major code cleanup
+
+## Release 1.0.2
+- Moved user specific stuff into dedicated files / functions (`user_setup` and `user_loop`)
+- Disabled VCC readouts for WEMOS S2 Mini board
+- Added description for wired programming of WEMOS S2 Mini in `platformio.ini`

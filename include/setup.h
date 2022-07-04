@@ -8,13 +8,16 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <WiFi.h>
+#ifdef READVCC
 #include "driver/adc.h"
+#endif
 #include "hardware-config.h"
 #include "wifi-config.h"
 #include "generic-config.h"
 #include "mqtt-ota-config.h"
 #include "common-functions.h"
 #include "macro-handling.h"
+#include "user_setup.h"
 
 // Declare setup functions
 extern void wifi_setup();
