@@ -24,6 +24,7 @@ extern unsigned int SubscribedTopics;
 extern unsigned int ReceivedTopics;
 
 // MQTT Topic Tree prepended to all topics
+// ATTN: Must end with "/"!
 #define TOPTREE "HB7/Test/"
 
 // MQTT Topics and corresponding local vars
