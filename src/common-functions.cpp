@@ -84,7 +84,7 @@ void MqttUpdater()
             DEBUG_PRINT("Waiting for topics..");
             while (ReceivedTopics < SubscribedTopics)
             {
-                DEBUG_PRINT(".");
+                DEBUG_PRINT(".:T!:.");
                 mqttClt.loop();
 #ifdef ONBOARD_LED
                 ToggleLed(LED, 100, 2);
@@ -115,6 +115,33 @@ void MqttUpdater()
     }
 }
 
+// Function to periodically handle MQTT stuff while delaying
+// This causes some inaccuracy in the delay of course.
+void MqttDelay(uint32_t delayms)
+{
+    // unsigned long md_start = millis();
+    //  Call MqttUpdater every 200ms
+    int Counter = delayms / 200;
+    if (Counter == 0)
+    {
+        // Delay less than 200ms requested, just run delay and return
+        delay(delayms);
+        return;
+    }
+    else
+    {
+        for (int i = 0; i < Counter; i++)
+        {
+            MqttUpdater();
+            delay(200);
+        }
+    }
+    // unsigned long real_delay = millis() - md_start;
+    // DEBUG_PRINTLN("MqttDelay requested: " + String(delayms));
+    // DEBUG_PRINTLN("MqttDelay Counter: " + String(Counter));
+    // DEBUG_PRINTLN("MqttDelay duration: " + String(real_delay));
+}
+
 // Function to handle OTA flashing (called in main loop)
 // Returns TRUE while OTA-update was requested or in progress
 #ifdef OTA_UPDATE
@@ -127,6 +154,8 @@ bool OTAUpdateHandler()
         if (OtaInProgress && !OtaIPsetBySketch)
         {
             DEBUG_PRINTLN("OTA firmware update successful, resuming normal operation..");
+            // Make sure that MQTT Broker is connected
+            MqttUpdater();
             mqttClt.publish(otaStatus_topic, String(UPDATEOK).c_str(), true);
             mqttClt.publish(ota_topic, String("off").c_str(), true);
             mqttClt.publish(otaInProgress_topic, String("off").c_str(), true);
@@ -135,6 +164,7 @@ bool OTAUpdateHandler()
             OtaIPsetBySketch = true;
             SentOtaIPtrue = false;
             SentUpdateRequested = false;
+            delay(100);
             return false;
         }
         if (!SentUpdateRequested)
@@ -166,12 +196,15 @@ bool OTAUpdateHandler()
         if (SentUpdateRequested)
         {
             DEBUG_PRINTLN("OTA firmware update cancelled by MQTT, resuming normal operation..");
+            // Make sure that MQTT Broker is connected
+            MqttUpdater();
             mqttClt.publish(otaStatus_topic, String(UPDATECANC).c_str(), true);
             mqttClt.publish(otaInProgress_topic, String("off").c_str(), true);
             OtaInProgress = false;
             OtaIPsetBySketch = true;
             SentOtaIPtrue = false;
             SentUpdateRequested = false;
+            delay(100);
             return false;
         }
     }

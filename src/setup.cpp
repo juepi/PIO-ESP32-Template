@@ -83,7 +83,7 @@ void wifi_setup()
 #endif
         }
         delay(500);
-        DEBUG_PRINT(".");
+        DEBUG_PRINT(".:W!:.");
     }
     DEBUG_PRINTLN("");
     DEBUG_PRINTLN("WiFi connected");
