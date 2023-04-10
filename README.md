@@ -11,7 +11,7 @@ As the main intention of this program is to run on a MCU that is powered off (sl
 
 ## Configuration
 In addition to the `platformio.ini` file, see header files in the `include/` folder for additional settings.  
-Configureable settings (`include/*-config.h`) should be documented well enough there - hopefully ;-)
+Configureable settings (`include/*-config.h`) should be documented well enough there - hopefully *wink*.
 
 ### MQTT Topics used
 In order to run OTA updates, you will need at least the following MQTT topics on your broker (case sensitive) to be pre-created with the default retained message so ESP can subscribe to them:
@@ -33,7 +33,6 @@ The sketch will publish the voltage measured on the configured ADC pin here. Not
 ### Importance of `ClientName` Setting
 Note that the `ClientName` configured in the `platformio.ini` file will also be used as the hostname reported to your DHCP server when the ESP fetches an IP-address. This is especially important, as OTA-flashing will also require your networking environment to be able to resolve this hostname to the ESP's IP-address!  
 See `upload_port`setting in the `platformio.ini` file. If you're having troubles with OTA-flashing, you might want to check that first by pinging the configured `ClientName`.  
-**ATTENTION**: `ClientName` must not contain dashes.
 
 ### Compiling and flashing walkthrough
 I will give a rough walkthrough on the first steps, assuming you have a working PlatformIO environment:
@@ -56,28 +55,31 @@ Deactivate OTA-flashing in the board specific area:
 
 **To re-flash the sketch OTA:**
 * Prepare `platformio.ini` for OTA flashing
-Activate OTA-flashing in the board specific area:
+Activate OTA-flashing in the board specific area of the active board:
 ```
 upload_protocol = ${common_env_data.upload_protocol}
 upload_port = ${common_env_data.upload_port}
 upload_flags = ${common_env_data.upload_flags}
 ```
-* Set topic `topic/tree/OTAupdate` retained "on"
+* Set topic `topic/tree/OTAupdate` **retained** "on"
 * wait for the ESP to start up (or reset your ESP)
 * When the ESP boots, it will slowly blink the onboard LED until all MQTT topics are received
 * After that, the onboard LED will start flashing rapidly. The ESP is now waiting for the new binary to be uploaded
 * Click "Upload" in PIO to compile and upload the new sketch
 * When the upload has finished, the ESP will boot the new sketch and finish the OTA update process by setting `topic/tree/OTAinProgress` and `topic/tree/OTAupdate` to "off".
-* You can verify the status by reading the `topic/tree/OTAstatus` topic, which should throw the string "update_success"
+* You can verify the status by reading the `topic/tree/OTAstatus` topic, which should throw the string "update_success".
 
-### Adding your own MQTT topic subscriptions to the sketch
-If you want to add your own MQTT topic subscription, you will need to adopt the following files:  
+### Adding your own code to the template
+To add your own functionality to the template, you will need to adopt the following files:  
 
 * `include/mqtt-ota-config.h`  
-Define/declare your topic along with required vars here.  
+Update the `TOPTREE` to your needs.  
 
-* `src/setup.cpp`  
-Define initial values of your vars here.  
+* `include/user-config.h`  
+Define/declare your topics along with required global vars and libs here.  
+
+* `src/user_setup_loop.cpp`  
+Add your desired functionality to the `user_loop` and `user_setup` functions.  
 
 * `src/common-functions.cpp`  
 Include message handling of your topic(s) in the `MqttCallback` function by adding new `else if`´s:  
@@ -91,23 +93,31 @@ Subscribe to your topics by adding `MqttSubscribe` function calls in the `Connec
 MqttSubscribe(your_defined_topic);
 ```
 
-### Adding your own code to the sketch main loop
-Add your desired functionality to the main loop (`src/main.cpp`) at the commented section.  
+### Note on delays and MQTT communication
+I have tried to get rid of the `delay()`s implemented to allow background WiFi processing (by using `WiFiClient.flush` instead of delays and configuring `WiFiClient.setNoDelay`), but i was not able to get satisfying MQTT communication without them. Either it took too long to fetch new messages from described topics, or sending new messages crashed (resetted) the ESP.  
+My recommendation is, to make sure to add at least a 100ms delay after sending a bunch of MQTT messages. You may also want to use the `MqttDelay`function if you add longer delays (above 200ms), as it will automatically call the PubSubClient `loop` function to fetch new MQTT messages every 200ms of delay.  
+In addition, i have added a `user_loop` runtime specific delay in the main loop in v1.0.4: if the `user_loop` takes less than 100ms for execution, a 100ms delay will execute in the main loop.
+
 
 # Version History
 
 ## Release v1.0.0
 Initial Release
 
-## Release 1.0.1
+## Release v1.0.1
 - Major code cleanup
 
-## Release 1.0.2
+## Release v1.0.2
 - Moved user specific stuff into dedicated files / functions (`user_setup` and `user_loop`)
 - Disabled VCC readouts for WEMOS S2 Mini board
 - Added description for wired programming of WEMOS S2 Mini in `platformio.ini`
 
-## Release 1.0.3
+## Release v1.0.3
 - Added `MqttDelay` function which handles MQTT connection/subscriptions while delaying
 - Some minor changes which may improve OTA-update handling in some cases
-- README update on `ClientName` limitation
+- README update on `ClientName` limitation (no dashes allowed)
+
+## Release v1.0.4
+- Fixed `ClientName` limitation
+- Added ESP reboot when cancelling OTA Update
+- Added `user_loop` runtime dependent 100ms delay in main loop

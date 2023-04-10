@@ -23,10 +23,12 @@ void user_setup()
  */
 void user_loop()
 {
-// Add stuff you want to periodically run in main loop here
-// =========================================================
+  // Add stuff you want to periodically run in main loop here
+  // =========================================================
 #ifdef ONBOARD_LED
   // Toggle LED at each loop
-  ToggleLed(LED, 500, 4);
+  ToggleLed(LED, 1, 1);
 #endif
+  DEBUG_PRINTLN("user_loop finished.");
+  MqttDelay(1000);
 }

@@ -7,9 +7,6 @@
 
 #include "macro-handling.h"
 
-// WiFi CLient object name
-#define WIFI_CLTNAME CLTNAME
-
 // Set WiFi Sleep Mode
 // ====================
 // CAUTION: Light sleep might disconnect you from broker during sketch execution!

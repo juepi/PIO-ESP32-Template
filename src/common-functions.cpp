@@ -164,7 +164,7 @@ bool OTAUpdateHandler()
             OtaIPsetBySketch = true;
             SentOtaIPtrue = false;
             SentUpdateRequested = false;
-            delay(100);
+            delay(200);
             return false;
         }
         if (!SentUpdateRequested)
@@ -185,7 +185,7 @@ bool OTAUpdateHandler()
             OtaInProgress = true;
             SentOtaIPtrue = true;
             OtaIPsetBySketch = true;
-            delay(100);
+            delay(200);
         }
         // call OTA function to receive upload
         ArduinoOTA.handle();
@@ -195,16 +195,15 @@ bool OTAUpdateHandler()
     {
         if (SentUpdateRequested)
         {
-            DEBUG_PRINTLN("OTA firmware update cancelled by MQTT, resuming normal operation..");
+            DEBUG_PRINTLN("OTA firmware update cancelled by user, cleaning up and rebooting..");
             // Make sure that MQTT Broker is connected
             MqttUpdater();
             mqttClt.publish(otaStatus_topic, String(UPDATECANC).c_str(), true);
             mqttClt.publish(otaInProgress_topic, String("off").c_str(), true);
-            OtaInProgress = false;
-            OtaIPsetBySketch = true;
-            SentOtaIPtrue = false;
-            SentUpdateRequested = false;
-            delay(100);
+            delay(200);
+            // Reboot after cancelled update
+            ESP.restart();
+            delay(500);
             return false;
         }
     }
