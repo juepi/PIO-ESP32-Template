@@ -81,17 +81,21 @@ Define/declare your topics along with required global vars and libs here.
 * `src/user_setup_loop.cpp`  
 Add your desired functionality to the `user_loop` and `user_setup` functions.  
 
-* `src/common-functions.cpp`  
-Include message handling of your topic(s) in the `MqttCallback` function by adding new `else if`´s:  
+* `src/mqtt-subscriptions.cpp`  
+Add an array element to the `MqttSubscriptions` struct array, in example:  
 ```
-else if (String(topic) == your_defined_topic)
+{.Topic = ota_topic, .Type = 0, .Subscribed = false, .MsgRcvd = false, .BoolPtr = &OTAupdate }
 ```
+The following data types are supported (parameter `Type`):
+* **BOOL (Type = 0)**
+Use the `.BoolPtr` to point to a global `bool` variable where you want to store the received messages for this topic. The BOOL type expects either "on" or "off" text messages to be received from the subscribed topic.  
+  
+* **INT (Type = 1)**
+Use the `.IntPtr` to point to a global `int` variable. The string function `.toInt()` will be used to decode the message to an integer value.  
+  
+* **FLOAT (Type = 2)**
+Use the `.FloatPtr` to point to a global `float` variable. The string function `.toFloat()` will be used to decode the message to a float value. Make sure to use dots as decimal point in your messages.  
 
-* `src/common-functions.cpp`  
-Subscribe to your topics by adding `MqttSubscribe` function calls in the `ConnectToBroker` function:
-```
-MqttSubscribe(your_defined_topic);
-```
 
 ### Note on delays and MQTT communication
 I have tried to get rid of the `delay()`s implemented to allow background WiFi processing (by using `WiFiClient.flush` instead of delays and configuring `WiFiClient.setNoDelay`), but i was not able to get satisfying MQTT communication without them. Either it took too long to fetch new messages from described topics, or sending new messages crashed (resetted) the ESP.  
@@ -121,3 +125,7 @@ Initial Release
 - Fixed `ClientName` limitation
 - Added ESP reboot when cancelling OTA Update
 - Added `user_loop` runtime dependent 100ms delay in main loop
+
+## Release v1.1.0
+- Reworked MQTT subscriptions
+- OTA updating support now mandatory

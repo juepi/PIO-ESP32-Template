@@ -5,7 +5,9 @@
 #ifndef HARDWARE_CONFIG_H
 #define HARDWARE_CONFIG_H
 
+//
 // WEMOS Lolin32 Board
+//
 #ifdef WEMOS_LOLIN32
 // Onboard LED
 #define LED 5
@@ -29,7 +31,9 @@
 
 #endif // WEMOS_LOLIN32
 
+//
 // WEMOS S2 Mini (ESP32S2) Board
+//
 #ifdef WEMOS_S2MINI
 // Onboard LED
 #define LED 15
@@ -44,12 +48,14 @@
 
 #endif // WEMOS_S2MINI
 
+//
 // Use RTC RAM to store Variables that should survive DeepSleep
-// =============================================================
+//
 // ATTN: define KEEP_RTC_SLOWMEM or vars will be lost (PowerDomain disabled)
 //#define KEEP_RTC_SLOWMEM
 
 #ifdef KEEP_RTC_SLOWMEM
+// Example
 extern RTC_DATA_ATTR int SaveMe;
 #endif
 

@@ -10,18 +10,14 @@ const char *password = WIFI_PSK;
 
 // Define MQTT and OTA-update Variables
 char message_buff[20];
-#ifdef OTA_UPDATE
 bool OTAupdate = false;
 bool SentUpdateRequested = false;
 bool OtaInProgress = false;
 bool OtaIPsetBySketch = false;
 bool SentOtaIPtrue = false;
-#endif
 #ifdef READVCC
 float VCC = 3.333;
 #endif
-unsigned int SubscribedTopics = 0;
-unsigned int ReceivedTopics = 0;
 
 // Variables that should be saved during DeepSleep
 #ifdef KEEP_RTC_SLOWMEM
@@ -97,7 +93,6 @@ void wifi_setup()
 #endif
 }
 
-#ifdef OTA_UPDATE
 void ota_setup()
 {
     // Setup OTA Updates
@@ -138,7 +133,6 @@ void ota_setup()
         delay(500); });
     ArduinoOTA.begin();
 }
-#endif
 
 /*
  * Setup
@@ -165,9 +159,7 @@ void setup()
     wifi_setup();
 
     // Setup OTA
-#ifdef OTA_UPDATE
     ota_setup();
-#endif
 
     // Setup user specific stuff
     user_setup();

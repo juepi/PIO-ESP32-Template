@@ -7,11 +7,14 @@
 
 #include <Arduino.h>
 
-// Firmware Information
+//
+// Firmware Version Information
+//
 #define FIRMWARE_NAME "PIO ESP32 Template"
 #define FIRMWARE_VERSION "1.0.0"
-#define TEMPLATE_VERSION "1.0.4"
+#define TEMPLATE_VERSION "1.1.0"
 
+//
 // Serial Output configuration
 //
 #define BAUD_RATE 115200
@@ -23,6 +26,7 @@
 #define DEBUG_PRINTLN(...)
 #endif
 
+//
 // ESP DeepSleep Configuration
 //
 // DeepSleep duration in Minutes
