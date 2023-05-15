@@ -98,7 +98,7 @@ Use the `.FloatPtr` to point to a global `float` variable. The string function `
 
 
 ### Note on delays and MQTT communication
-I have tried to get rid of the `delay()`s implemented to allow background WiFi processing (by using `WiFiClient.flush` instead of delays and configuring `WiFiClient.setNoDelay`), but i was not able to get satisfying MQTT communication without them. Either it took too long to fetch new messages from described topics, or sending new messages crashed (resetted) the ESP.  
+I have tried to get rid of the `delay()`s implemented to allow background WiFi processing (by using `WiFiClient.flush` instead of delays and configuring `WiFiClient.setNoDelay`), but i was not able to get satisfying MQTT communication without them. Either it took too long to fetch new messages from subscribed topics, or sending new messages crashed (resetted) the ESP.  
 My recommendation is, to make sure to add at least a 100ms delay after sending a bunch of MQTT messages. You may also want to use the `MqttDelay`function if you add longer delays (above 200ms), as it will automatically call the PubSubClient `loop` function to fetch new MQTT messages every 200ms of delay.  
 In addition, i have added a `user_loop` runtime specific delay in the main loop in v1.0.4: if the `user_loop` takes less than 100ms for execution, a 100ms delay will execute in the main loop.
 
