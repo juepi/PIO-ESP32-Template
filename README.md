@@ -69,6 +69,17 @@ upload_flags = ${common_env_data.upload_flags}
 * When the upload has finished, the ESP will boot the new sketch and finish the OTA update process by setting `topic/tree/OTAinProgress` and `topic/tree/OTAupdate` to "off".
 * You can verify the status by reading the `topic/tree/OTAstatus` topic, which should throw the string "update_success".
 
+### OTA Update and the firewall
+Your OTA flashing might fail with the following error:
+```
+Sending invitation to esp32-test 
+Authenticating...OK
+20:31:25 [INFO]: Waiting for device...
+20:31:35 [ERROR]: No response from device
+*** [upload] Error 1
+```
+If you run Windows, make sure that your local firewall (where you run VSC) allows `C:\Users\your_username\.platformio\python3\python.exe` to freely communicate (Any protocols, any ports - inbound and outbound; use the full path as described, do not use `%USERPROFILE%` environment variable, it won't work!).
+
 ### Adding your own code to the template
 To add your own functionality to the template, you will need to adopt the following files:  
 
