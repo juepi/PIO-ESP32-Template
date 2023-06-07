@@ -12,7 +12,7 @@
 //
 #define FIRMWARE_NAME "PIO ESP32 Template"
 #define FIRMWARE_VERSION "1.0.0"
-#define TEMPLATE_VERSION "1.1.0"
+#define TEMPLATE_VERSION "1.2.0"
 
 //
 // Serial Output configuration

@@ -15,6 +15,9 @@ bool SentUpdateRequested = false;
 bool OtaInProgress = false;
 bool OtaIPsetBySketch = false;
 bool SentOtaIPtrue = false;
+const int NetFailAction = NET_OUTAGE;
+bool NetFailure = false;
+unsigned long NetRecoveryMillis = 0;
 #ifdef READVCC
 float VCC = 3.333;
 #endif
@@ -75,7 +78,15 @@ void wifi_setup()
             ESP.deepSleep(DS_DURATION_MIN * 60000000);
             delay(3000);
 #else
-            ESP.restart();
+            if (NetFailAction == 0)
+            {
+                ESP.restart();
+            }
+            else
+            {
+                DEBUG_PRINTLN("Unable to connect to WiFi, continuing");
+                NetFailure = true;
+            }
 #endif
         }
         delay(500);
@@ -87,6 +98,7 @@ void wifi_setup()
     DEBUG_PRINTLN(WiFi.localIP());
     DEBUG_PRINT("DHCP Hostname: ");
     DEBUG_PRINTLN(WIFI_DHCPNAME);
+    NetFailure = false;
 #ifdef ONBOARD_LED
     // WiFi connected - blink once
     ToggleLed(LED, 200, 2);

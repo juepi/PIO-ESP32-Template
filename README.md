@@ -2,12 +2,12 @@
 A template for ESP32 programming using VSC + [PlatformIO](https://platformio.org/) supporting MQTT, OTA-flashing, Battery supply voltage readout (possibly not yet working) and ESP Deep-Sleep.  
 
 ## Local Requirements
-A (local) MQTT broker is mandatory for OTA-Flashing. With deactivated OTA-flashing, you might remove MQTT functionality.  
+A (local) MQTT broker is mandatory for this firmware.  
 Additionally, personal settings like WIFI SSID and Passphrase will be taken from local environment variables, see `platformio.ini`.  
 
 ## An important notice on MQTT usage
-As the main intention of this program is to run on a MCU that is powered off (sleeping) most of the time, we will **only work with retained messages** here! This ensures that a client subscribing to a topic will receive the last value published "instantly" and does not need to wait for someone to publish "latest news".  
-**ATTENTION**: The current version **requires** retained messages for **all topics you subscribe to!** Not having retained message for a subscribed topic will lead to an endless loop until a message is being received. This behavior has been set up to speed up receiving messages for all subscribed topics after initiating the connection to the MQTT broker (to minimize sketch runtime / maximize battery lifetime).
+Until **v1.1.0**, it was neccessary to have **retained messages available for every subscribed topic**. This was due to the main intention of this firmware to run on a MCU that is powered off (sleeping) most of the time. To ensure that the MCU will receive all messages for subscribed topics "instantly" at firmware startup (after sleeping in example) and does not need to wait for someone to publish "latest news", an endless loop was implemented to wait for messages of all subscribed topics (maximizing battery lifetime by minimizing MCU uptime).  
+Since **v1.2.0** it is possible to change this behavior in `platformio.ini` with the define switch `WAIT_FOR_SUBSCRIPTIONS`. Do note that this is fairly untested and you have to ensure that you do not rely on MQTT messages (like configuration data) in your firmware that might not have been received yet.
 
 ## Configuration
 In addition to the `platformio.ini` file, see header files in the `include/` folder for additional settings.  
@@ -113,6 +113,14 @@ I have tried to get rid of the `delay()`s implemented to allow background WiFi p
 My recommendation is, to make sure to add at least a 100ms delay after sending a bunch of MQTT messages. You may also want to use the `MqttDelay`function if you add longer delays (above 200ms), as it will automatically call the PubSubClient `loop` function to fetch new MQTT messages every 200ms of delay.  
 In addition, i have added a `user_loop` runtime specific delay in the main loop in v1.0.4: if the `user_loop` takes less than 100ms for execution, a 100ms delay will execute in the main loop.
 
+### Behavior on WiFi or MQTT broker connection failures
+Since **v1.2.0** it is possible to select the desired behavior of the firmware at network or broker connection errors through `platformio.ini`:
+* **Reboot ESP (NET_OUTAGE=0)**
+This was the behavior until v1.1.0. Reboot ESP until the network or broker connection failure recovers.  
+
+* **Run locally (NET_OUTAGE=1)**
+This will keep the firmware running even without a network connection. It will automatically try to recover the connection to the MQTT broker every `NET_RECONNECT_INTERVAL` (configurable in `wifi_config.h`, defaults to 1 minute). The firmware will also boot without a broker being available, thus you have to make sure that you have **suitable default values programmed into your firmware wherever needed**.
+
 
 # Version History
 
@@ -135,8 +143,12 @@ Initial Release
 ## Release v1.0.4
 - Fixed `ClientName` limitation
 - Added ESP reboot when cancelling OTA Update
-- Added `user_loop` runtime dependent 100ms delay in main loop
+- Added `user_loop` runtime dependent 100ms delay in main loop (for WiFi background task handling)
 
 ## Release v1.1.0
 - Reworked MQTT subscriptions
 - OTA updating support now mandatory
+
+## Release v1.2.0
+- Added selectable firmware behavior on network and/or MQTT broker outages
+- Added define switch in `platformio.ini` to allow not to wait for incoming messages on all subscribed topics at firmware boot
