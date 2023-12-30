@@ -18,4 +18,15 @@ extern void user_loop();
 // Declare global user specific objects
 // extern abc xyz;
 
+//
+// Use RTC RAM to store Variables that should survive DeepSleep
+//
+// ATTN: define KEEP_RTC_SLOWMEM or vars will be lost (PowerDomain disabled)
+//#define KEEP_RTC_SLOWMEM
+
+#ifdef KEEP_RTC_SLOWMEM
+// Example
+extern RTC_DATA_ATTR int SaveMe;
+#endif
+
 #endif // USER_CONFIG_H

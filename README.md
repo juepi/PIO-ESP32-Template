@@ -152,3 +152,8 @@ Initial Release
 ## Release v1.2.0
 - Added selectable firmware behavior on network and/or MQTT broker outages
 - Added define switch in `platformio.ini` to allow not to wait for incoming messages on all subscribed topics at firmware boot
+
+## Release v1.3.0
+- Added optional SNTP client support (enable in `platformio.ini`, configure in `ntp-config.h`)
+- `user_loop` runtime dependent delay now configurable in `platformio.ini`
+- Enable / Tested VCC readouts on ADC1_2 (GPIO3) for S2-Mini boards (Tested with [ESP-Mini-Base](https://github.com/juepi/ESP-Mini-Base))

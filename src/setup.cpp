@@ -22,23 +22,33 @@ unsigned long NetRecoveryMillis = 0;
 float VCC = 3.333;
 #endif
 
-// Variables that should be saved during DeepSleep
-#ifdef KEEP_RTC_SLOWMEM
-RTC_DATA_ATTR int SaveMe = 0;
-#endif
-
 // Setup WiFi instance
 WiFiClient WiFiClt;
 
 // Setup PubSub Client instance
 PubSubClient mqttClt(MQTT_BROKER, 1883, MqttCallback, WiFiClt);
 
+#ifdef NTP_CLT
+// Define vars for NTP client
+const char* NTPServer1 = NTPSRV_1;
+#ifdef NTPSRV_2
+const char* NTPServer2 = NTPSRV_2;
+#endif
+const char* time_zone = TIMEZONE;
+unsigned int NTPSyncCounter = 0;
+struct tm TimeInfo;
+#endif
+
 void hardware_setup()
 {
 #ifdef READVCC
     // Setup ADC
-    adc1_config_channel_atten(ADC_CHAN, ADC_ATTENUATION);
-    adc1_config_width(ADC_RESOLUTION);
+    analogSetPinAttenuation(VBAT_ADC_PIN,ADC_ATTENUATION);
+    analogReadResolution(ADC_RESOLUTION);
+#ifdef READ_THROUGH_GPIO
+    pinMode(READ_THROUGH_GPIO, OUTPUT);
+    digitalWrite(READ_THROUGH_GPIO,HIGH);
+#endif
 #endif
 
 // Disable all power domains on ESP while in DeepSleep (actually Hibernation)
@@ -172,6 +182,18 @@ void setup()
 
     // Setup OTA
     ota_setup();
+
+#ifdef NTP_CLT
+    //Configure NTP client
+    sntp_set_time_sync_notification_cb( NTP_Synced_Callback );
+    sntp_set_sync_mode(SYNC_MODE);
+    sntp_set_sync_interval(SYNC_INTERVAL);
+#ifdef NTPSRV_2
+    configTzTime(time_zone, NTPServer1, NTPServer2);
+#else
+    configTzTime(time_zone, NTPServer1);
+#endif
+#endif //NTP_CLT
 
     // Setup user specific stuff
     user_setup();

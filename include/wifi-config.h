@@ -28,7 +28,7 @@ extern const char *password;
 extern const int NetFailAction;         // Behavior on network / MQTT broker outages (defined in platformio.ini)
 extern bool NetFailure;                 // Global flag to signal network failure
 extern unsigned long NetRecoveryMillis; // store MCU "uptime" of the last network recovery (informational only)
-#define NET_RECONNECT_INTERVAL 60000   // try to reconnect to WiFi / Broker every minute
+#define NET_RECONNECT_INTERVAL 60000    // try to reconnect to WiFi / Broker every minute
 
 // DHCP Hostname to report
 #define WIFI_DHCPNAME TEXTIFY(CLTNAME)

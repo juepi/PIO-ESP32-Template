@@ -11,8 +11,8 @@
 // Firmware Version Information
 //
 #define FIRMWARE_NAME "PIO ESP32 Template"
-#define FIRMWARE_VERSION "1.0.0"
-#define TEMPLATE_VERSION "1.2.0"
+#define FIRMWARE_VERSION "1.0.0" // Add firmware version info of your custom code here
+#define TEMPLATE_VERSION "1.3.0"
 
 //
 // Serial Output configuration

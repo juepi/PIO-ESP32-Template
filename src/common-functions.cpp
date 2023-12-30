@@ -281,3 +281,12 @@ void MqttCallback(char *topic, byte *payload, unsigned int length)
         }
     }
 }
+
+#ifdef NTP_CLT
+// Callback function (gets called when time adjusts via NTP)
+void NTP_Synced_Callback(struct timeval *t)
+{
+    // Update global time-synced flag
+    NTPSyncCounter++;
+}
+#endif // NTP_CLT

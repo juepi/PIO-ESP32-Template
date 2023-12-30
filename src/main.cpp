@@ -56,6 +56,18 @@ void loop()
       // OTA Update in progress, restart main loop
       return;
     }
+#ifdef READVCC
+    // Read VCC and publish to MQTT
+    // Might not work correctly!
+    VCC = VDIV * VFULL_SCALE * float(analogRead(VBAT_ADC_PIN)) / ADC_MAXVAL;
+    //mqttClt.publish(vcc_topic, String(VCC).c_str(), true);
+    DEBUG_PRINTLN("VCC = " + String(VCC) + " V");
+    delay(100);
+#endif
+#ifdef NTP_CLT
+    // Update time variable with a timeout of 100ms
+    getLocalTime(&TimeInfo,100);
+#endif
   }
 
   // Run user specific loop and measure duration
@@ -63,21 +75,12 @@ void loop()
   user_loop();
   duration_user_loop = millis() - start_user_loop;
 
+#ifdef WIFI_DELAY
   // Spare some CPU time for background tasks (if we're not in a hurry)
   if (duration_user_loop < 100)
   {
-    delay(100);
+    delay(WIFI_DELAY);
   }
-
-#ifdef READVCC
-  // Read VCC and publish to MQTT
-  // Might not work correctly!
-  VCC = VDIV * VFULL_SCALE * float(analogRead(VBAT_ADC_PIN)) / ADC_MAXVAL;
-  mqttClt.publish(vcc_topic, String(VCC).c_str(), true);
-  DEBUG_PRINTLN("VCC = " + String(VCC) + " V");
-  DEBUG_PRINT("Raw ADC Pin readout: ");
-  DEBUG_PRINTLN(analogRead(VBAT_ADC_PIN));
-  delay(100);
 #endif
 
 #ifdef E32_DEEP_SLEEP
