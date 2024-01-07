@@ -27,9 +27,16 @@
 #endif
 
 //
-// ESP DeepSleep Configuration
+// Handle #define dependencies
 //
-// DeepSleep duration in Minutes
-#define DS_DURATION_MIN 2
+#ifdef BOOT_WIFI_OFF
+#undef WAIT_FOR_SUBSCRIPTIONS
+#undef NET_OUTAGE // to avoid compiler warning
+#define NET_OUTAGE 1
+#endif
+#ifdef SLEEP_UNTIL
+#undef NTP_CLT // to avoid compiler warning
+#define NTP_CLT
+#endif
 
 #endif // GENERIC_CONFIG_H

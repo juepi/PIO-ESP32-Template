@@ -76,7 +76,7 @@ void MqttUpdater()
             // New connection to broker, fetch topics
             // ATTN: will run endlessly if not all subscribed topics
             // have retained messages and no one posts a message (disable in platformio.ini)
-            NetFailure = false;
+            NetState = NET_UP;
 #ifdef WAIT_FOR_SUBSCRIPTIONS
             DEBUG_PRINT("Waiting for messages..");
             bool MissingTopics = true;
@@ -111,20 +111,19 @@ void MqttUpdater()
 #ifdef ONBOARD_LED
             ToggleLed(LED, 100, 40);
 #endif
-#ifdef DEEP_SLEEP
-            ESP.deepSleep(DS_DURATION_MIN * 60000000);
-            delay(3000);
-#else
             if (NetFailAction == 0)
             {
+#ifdef E32_DEEP_SLEEP
+                esp_deep_sleep((uint64_t)DS_DURATION_MIN * 60000000);
+#else
                 ESP.restart();
+#endif
             }
             else
             {
-                DEBUG_PRINTLN("Unable to connect to Broker, continuing");
-                NetFailure = true;
+                DEBUG_PRINTLN("Unable to connect to Broker, continuing offline");
+                NetState = NET_FAIL;
             }
-#endif
         }
     }
     else
@@ -163,6 +162,30 @@ bool OTAUpdateHandler()
     // only loop through OTA function until finished (or reset by MQTT)
     if (OTAupdate)
     {
+        DEBUG_PRINT("OTAupdate in progress, need to wait for all MQTT topics..");
+        bool MissingTopics = true;
+        while (MissingTopics)
+        {
+            MissingTopics = false;
+            for (int i = 0; i < SubscribedTopicCnt; i++)
+            {
+                if (!MqttSubscriptions[i].MsgRcvd)
+                {
+                    MissingTopics = true;
+                }
+            }
+            if (MissingTopics)
+            {
+                DEBUG_PRINT(".:OTA_T!:.");
+                mqttClt.loop();
+#ifdef ONBOARD_LED
+                ToggleLed(LED, 50, 2);
+#else
+                delay(100);
+#endif
+            }
+        }
+        // got all topics, continue
         if (OtaInProgress && !OtaIPsetBySketch)
         {
             DEBUG_PRINTLN("OTA firmware update successful, resuming normal operation..");
@@ -222,6 +245,36 @@ bool OTAUpdateHandler()
     return false;
 }
 
+//
+// Functions to enable/disable WiFi
+//
+// Bring up WiFi and start services
+void wifi_up()
+{
+    wifi_setup();
+    if (NetState == NET_UP)
+    {
+        ota_setup();
+#ifdef NTP_CLT
+        ntp_setup();
+#endif
+    }
+}
+
+// Disconnect MQTT, stop services and disable WiFi
+void wifi_down()
+{
+    mqttClt.disconnect();
+    ArduinoOTA.end();
+#ifdef NTP_CLT
+    sntp_stop();
+#endif
+    WiFiClt.stop();
+    // bring down radio
+    WiFi.disconnect(true, false);
+    NetState = NET_DOWN;
+}
+
 /*
  * Callback Functions
  * ========================================================================
@@ -275,6 +328,11 @@ void MqttCallback(char *topic, byte *payload, unsigned int length)
             case 2:
                 // Handle subscriptions of type FLOAT
                 *MqttSubscriptions[i].FloatPtr = msgString.toFloat();
+                MqttSubscriptions[i].MsgRcvd = true;
+                break;
+            case 3:
+                // Handle subscriptions of type LONG (message decoded as hex!)
+                *MqttSubscriptions[i].TimePtr = (time_t)strtol(msgString.c_str(), NULL, 16);
                 MqttSubscriptions[i].MsgRcvd = true;
                 break;
             }

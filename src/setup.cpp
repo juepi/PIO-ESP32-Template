@@ -4,9 +4,18 @@
  */
 #include "setup.h"
 
+// Define generic global vars
+bool JustBooted = true; // Helper to let you know you're running the first iteration of the main loop()
 // Define WiFi Variables
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PSK;
+#ifdef BOOT_WIFI_OFF
+int NetState = NET_DOWN;
+#else
+int NetState = NET_UP;
+#endif
+const int NetFailAction = NET_OUTAGE;
+unsigned long NetRecoveryMillis = 0;
 
 // Define MQTT and OTA-update Variables
 char message_buff[20];
@@ -15,9 +24,6 @@ bool SentUpdateRequested = false;
 bool OtaInProgress = false;
 bool OtaIPsetBySketch = false;
 bool SentOtaIPtrue = false;
-const int NetFailAction = NET_OUTAGE;
-bool NetFailure = false;
-unsigned long NetRecoveryMillis = 0;
 #ifdef READVCC
 float VCC = 3.333;
 #endif
@@ -30,34 +36,55 @@ PubSubClient mqttClt(MQTT_BROKER, 1883, MqttCallback, WiFiClt);
 
 #ifdef NTP_CLT
 // Define vars for NTP client
-const char* NTPServer1 = NTPSRV_1;
+const char *NTPServer1 = NTPSRV_1;
 #ifdef NTPSRV_2
-const char* NTPServer2 = NTPSRV_2;
+const char *NTPServer2 = NTPSRV_2;
 #endif
-const char* time_zone = TIMEZONE;
+const char *time_zone = TIMEZONE;
 unsigned int NTPSyncCounter = 0;
 struct tm TimeInfo;
+time_t EpochTime;
+#endif
+// Vars for sleep-until function
+#ifdef SLEEP_UNTIL
+time_t SleepUntilEpoch = 0;
 #endif
 
 void hardware_setup()
 {
 #ifdef READVCC
     // Setup ADC
-    analogSetPinAttenuation(VBAT_ADC_PIN,ADC_ATTENUATION);
+    analogSetPinAttenuation(VBAT_ADC_PIN, ADC_ATTENUATION);
     analogReadResolution(ADC_RESOLUTION);
 #ifdef READ_THROUGH_GPIO
     pinMode(READ_THROUGH_GPIO, OUTPUT);
-    digitalWrite(READ_THROUGH_GPIO,HIGH);
+    digitalWrite(READ_THROUGH_GPIO, HIGH);
 #endif
 #endif
 
 // Disable all power domains on ESP while in DeepSleep (actually Hibernation)
-// wake up only by RTC
-#ifndef KEEP_RTC_SLOWMEM
+// wake up only by RTC timer
+#ifdef KEEP_RTC_SLOWMEM
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
+#else
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
 #endif
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+#ifdef SLEEP_RTC_CLK_8M
+    // Enable 8MHz/256 oscillator
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC8M, ESP_PD_OPTION_ON);
+    rtc_slow_freq_t rtcSlowFreq = RTC_SLOW_FREQ_8MD256;
+    rtc_clk_8m_enable(true, true);
+    rtc_clk_slow_freq_set(rtcSlowFreq);
+#endif
+#if defined SLEEP_UNTIL || defined E32_DEEP_SLEEP
+    // Measure clock period of RTC slow clock, add correction and save to RTC register
+    uint32_t rtcClkPeriod = (uint32_t)(0.5 + rtc_clk_cal(RTC_CAL_RTC_MUX, 1024));
+    uint32_t rtcClkPeriodCalib = rtcClkPeriod * CLK_CORR_FACTOR;
+    REG_WRITE(RTC_CNTL_STORE1_REG, rtcClkPeriodCalib);
+    delay(10);
+#endif
 }
 
 void wifi_setup()
@@ -85,8 +112,7 @@ void wifi_setup()
 #endif
 #ifdef E32_DEEP_SLEEP
             DEBUG_PRINTLN("Good night for " + String(DS_DURATION_MIN) + " minutes.");
-            ESP.deepSleep(DS_DURATION_MIN * 60000000);
-            delay(3000);
+            esp_deep_sleep((uint64_t)DS_DURATION_MIN * 60000000);
 #else
             if (NetFailAction == 0)
             {
@@ -95,7 +121,7 @@ void wifi_setup()
             else
             {
                 DEBUG_PRINTLN("Unable to connect to WiFi, continuing");
-                NetFailure = true;
+                NetState = NET_FAIL;
             }
 #endif
         }
@@ -108,7 +134,7 @@ void wifi_setup()
     DEBUG_PRINTLN(WiFi.localIP());
     DEBUG_PRINT("DHCP Hostname: ");
     DEBUG_PRINTLN(WIFI_DHCPNAME);
-    NetFailure = false;
+    NetState = NET_UP;
 #ifdef ONBOARD_LED
     // WiFi connected - blink once
     ToggleLed(LED, 200, 2);
@@ -156,6 +182,24 @@ void ota_setup()
     ArduinoOTA.begin();
 }
 
+#ifdef NTP_CLT
+void ntp_setup()
+{
+    // Configure NTP client
+    sntp_set_time_sync_notification_cb(NTP_Synced_Callback);
+    sntp_set_sync_mode(SYNC_MODE);
+    sntp_set_sync_interval(SYNC_INTERVAL);
+#ifdef NTPSRV_2
+    configTzTime(time_zone, NTPServer1, NTPServer2);
+#else
+    configTzTime(time_zone, NTPServer1);
+#endif
+    // Run first sync
+    getLocalTime(&TimeInfo, 200);
+    time(&EpochTime);
+}
+#endif // NTP_CLT
+
 /*
  * Setup
  * ========================================================================
@@ -177,23 +221,16 @@ void setup()
     // hardware specific setup
     hardware_setup();
 
+#ifndef BOOT_WIFI_OFF
     // Startup WiFi
     wifi_setup();
-
     // Setup OTA
     ota_setup();
-
 #ifdef NTP_CLT
-    //Configure NTP client
-    sntp_set_time_sync_notification_cb( NTP_Synced_Callback );
-    sntp_set_sync_mode(SYNC_MODE);
-    sntp_set_sync_interval(SYNC_INTERVAL);
-#ifdef NTPSRV_2
-    configTzTime(time_zone, NTPServer1, NTPServer2);
-#else
-    configTzTime(time_zone, NTPServer1);
+    // Setup NTP
+    ntp_setup();
 #endif
-#endif //NTP_CLT
+#endif // NDEF BOOT_WIFI_OFF
 
     // Setup user specific stuff
     user_setup();

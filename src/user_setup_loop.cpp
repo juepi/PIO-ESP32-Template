@@ -13,7 +13,7 @@ RTC_DATA_ATTR int SaveMe = 0;
 #endif
 
 /*
- * User Setup Loop
+ * User Setup function
  * ========================================================================
  */
 void user_setup()
@@ -39,5 +39,5 @@ void user_loop()
 #else
   DEBUG_PRINTLN("user_loop finished.");
 #endif
-  MqttDelay(1000);
+  MqttDelay(100);
 }

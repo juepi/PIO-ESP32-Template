@@ -15,12 +15,14 @@
 #include "common-functions.h"
 #include "macro-handling.h"
 #include "user-config.h"
-#include "ntp-config.h"
+#include "time-config.h"
+
 
 // Declare setup functions
 extern void wifi_setup();
 extern void ota_setup();
 extern void hardware_setup();
+extern void ntp_setup();
 extern void setup();
 
 // Declare global objects

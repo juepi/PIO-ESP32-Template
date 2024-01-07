@@ -30,6 +30,9 @@ The ESP will publish OTA status strings here. No need to pre-create this topic, 
 The sketch will publish the voltage measured on the configured ADC pin here. Note that we do not subscribe to this topic, we only publish to it.  
 **ATTENTION**: I'm unsure if reading the battery voltage works correctly - not yet tested (had some problems in the past with voltage readings on ESP32).
 
+* `topic/tree/SleepUntil` - default Message: none  
+If `SLEEP_UNTIL` is enabled in `platformio.ini`, you can send a message containing a unix epoch time value (32bit signed long, encoded in hexadecimal base) to this topic and the ESP will sleep until the set time, supposed that a valid NTP time has been received and the given wake-up-time is in the future. The message may start with "0x", upper and lower case supported.
+
 ### Importance of `ClientName` Setting
 Note that the `ClientName` configured in the `platformio.ini` file will also be used as the hostname reported to your DHCP server when the ESP fetches an IP-address. This is especially important, as OTA-flashing will also require your networking environment to be able to resolve this hostname to the ESP's IP-address!  
 See `upload_port`setting in the `platformio.ini` file. If you're having troubles with OTA-flashing, you might want to check that first by pinging the configured `ClientName`.  
@@ -102,10 +105,13 @@ The following data types are supported (parameter `Type`):
 Use the `.BoolPtr` to point to a global `bool` variable where you want to store the received messages for this topic. The BOOL type expects either "on" or "off" text messages to be received from the subscribed topic.  
   
 * **INT (Type = 1)**
-Use the `.IntPtr` to point to a global `int` variable. The string function `.toInt()` will be used to decode the message to an integer value.  
+Use the `.IntPtr` to point to a global `int` variable. The String function `.toInt()` will be used to decode the message to an integer value.  
   
 * **FLOAT (Type = 2)**
-Use the `.FloatPtr` to point to a global `float` variable. The string function `.toFloat()` will be used to decode the message to a float value. Make sure to use dots as decimal point in your messages.  
+Use the `.FloatPtr` to point to a global `float` variable. The String function `.toFloat()` will be used to decode the message to a float value. Make sure to use dots as decimal point in your messages.  
+
+* **time_t (Type = 3)**
+Use the `.TimePtr` to point to a global `time_t` variable. The function `strtol(msgString.c_str(), NULL, 16)` will be used to decode the message to a time_t value. Message will be decoded from a **hexadecimal base**, "0x" prefix optional, upper and lower case supported.  
 
 
 ### Note on delays and MQTT communication
@@ -154,6 +160,11 @@ Initial Release
 - Added define switch in `platformio.ini` to allow not to wait for incoming messages on all subscribed topics at firmware boot
 
 ## Release v1.3.0
-- Added optional SNTP client support (enable in `platformio.ini`, configure in `ntp-config.h`)
+- Added optional SNTP client support (enable in `platformio.ini`, configure in `time-config.h`)
+- Added optional support to sleep until a given epoch time (enable in `platformio.ini`)
+- Added option to measure DeepSleep time to decrease clock skew during sleep (enable in `time-config.h`)
+- Added option to use the more precise 8MHz/256 clock for the RTC, which should decrease time-drifts during DeepSleep (increases DeepSleep current for 5-20µA however)
 - `user_loop` runtime dependent delay now configurable in `platformio.ini`
 - Enable / Tested VCC readouts on ADC1_2 (GPIO3) for S2-Mini boards (Tested with [ESP-Mini-Base](https://github.com/juepi/ESP-Mini-Base))
+- Added option to start with WiFi disabled (enable in `platformio.ini`)
+- Added `wifi_up()` and `wifi_down()` functions which handle everything to bring networking/MQTT/NTP/OTA-flashing up and down

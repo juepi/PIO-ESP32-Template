@@ -18,5 +18,12 @@ extern bool MqttConnectToBroker();
 extern void MqttUpdater();
 extern void MqttDelay(uint32_t delayms);
 extern bool OTAUpdateHandler();
+extern void wifi_up();
+extern void wifi_down();
+
+//
+// Declare common global vars
+//
+extern bool JustBooted;
 
 #endif // COMMON_FUNCTIONS_H

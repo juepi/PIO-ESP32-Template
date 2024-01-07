@@ -18,11 +18,15 @@
 // Maximum connection attempts to MQTT broker before going to sleep
 #define MAXCONNATTEMPTS 3
 // Message buffer for incoming Data from MQTT subscriptions
+// increase if you receive larger messages for subscribed topics
 extern char message_buff[20];
 
 // MQTT Topic Tree prepended to all topics
 // ATTN: Must end with "/"!
 #define TOPTREE "HB7/Test/"
+
+// Default interval to publish MQTT data in seconds (currently used for VCC if enabled)
+#define MQTT_PUB_INTERVAL 900
 
 //
 // OTA-Update MQTT Topics and corresponding global vars
@@ -56,7 +60,7 @@ extern bool SentOtaIPtrue;
 struct MqttSubCfg
 {
     const char *Topic; // Topic to subscribe to
-    int Type;          // Type of message data received: 0=bool (message "on/off"); 1=int; 2=float
+    int Type;          // Type of message data received: 0=bool (message "on/off"); 1=int; 2=float; 3=time_t
     bool Subscribed;   // true if successfully subscribed to topic
     bool MsgRcvd;      // true if a message has been received for topic
     union              // Pointer to Variable which should be updated with the decoded message (only one applies acc. to "Type")
@@ -64,14 +68,33 @@ struct MqttSubCfg
         bool *BoolPtr;
         int *IntPtr;
         float *FloatPtr;
+        long *TimePtr;
     };
 };
 
 extern const int SubscribedTopicCnt; // Number of elements in MqttSubscriptions array (define in mqtt-subscriptions.cpp)
 extern MqttSubCfg MqttSubscriptions[];
 
+//
+// "Sleep until" MQTT Topic and corresponding global var
+//
+#ifdef SLEEP_UNTIL
+// "sleep until" given epoch time in sleep_until topic
+// the message will be decoded as hex, message may start with "0x", upper and lower case supported
+#define sleep_until_topic TOPTREE "SleepUntil"
+extern time_t SleepUntilEpoch; // stores time until ESP will sleep
+// The following topics are only used for MEASURE_SLEEP_CLOCK_SKEW (publish only)
+#define start_sleep_topic TOPTREE "StartSleepEpoch" // actual epoch when sending ESP to sleep
+#define set_sleep_dur_topic TOPTREE "DesiredSleepForSeconds" // expected sleep duration in seconds
+#define end_sleep_topic TOPTREE "WakeEpoch" // actual epoch after wakeup
+#define boot_dur_topic TOPTREE "BootDuration" //in milli seconds
+#endif
+
+//
+// Reading battery voltage (VCC when powered from a single LFP cell) Topic and corresponding global var
+//
 #ifdef READVCC
-// Topic where VCC will be published (not yet working with ESP32!)
+// Topic where VCC will be published
 #define vcc_topic TOPTREE "Vbat"
 extern float VCC;
 #endif
