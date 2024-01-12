@@ -1,5 +1,5 @@
 # Introduction 
-A template for ESP32 programming using VSC + [PlatformIO](https://platformio.org/) supporting MQTT, OTA-flashing, Battery supply voltage readout (possibly not yet working) and ESP Deep-Sleep.  
+A template for ESP32 programming using VSC + [PlatformIO](https://platformio.org/) supporting MQTT, OTA-flashing, Battery supply voltage readout and ESP Deep-Sleep.  
 
 ## Local Requirements
 A (local) MQTT broker is mandatory for this firmware.  
@@ -7,7 +7,7 @@ Additionally, personal settings like WIFI SSID and Passphrase will be taken from
 
 ## An important notice on MQTT usage
 Until **v1.1.0**, it was neccessary to have **retained messages available for every subscribed topic**. This was due to the main intention of this firmware to run on a MCU that is powered off (sleeping) most of the time. To ensure that the MCU will receive all messages for subscribed topics "instantly" at firmware startup (after sleeping in example) and does not need to wait for someone to publish "latest news", an endless loop was implemented to wait for messages of all subscribed topics (maximizing battery lifetime by minimizing MCU uptime).  
-Since **v1.2.0** it is possible to change this behavior in `platformio.ini` with the define switch `WAIT_FOR_SUBSCRIPTIONS`. Do note that this is fairly untested and you have to ensure that you do not rely on MQTT messages (like configuration data) in your firmware that might not have been received yet.
+Since **v1.2.0** it is possible to change this behavior in `platformio.ini` with the define switch `WAIT_FOR_SUBSCRIPTIONS`. Do note that you have to ensure that you do not rely on MQTT messages (like configuration data) in your firmware that might not have been received yet.
 
 ## Configuration
 In addition to the `platformio.ini` file, see header files in the `include/` folder for additional settings.  
@@ -16,11 +16,11 @@ Configureable settings (`include/*-config.h`) should be documented well enough t
 ### MQTT Topics used
 In order to run OTA updates, you will need at least the following MQTT topics on your broker (case sensitive) to be pre-created with the default retained message so ESP can subscribe to them:
 
-* `topic/tree/OTAupdate` - default retained Message: **off**  
+* `topic/tree/OTAupdate` - default **retained** Message: **off**  
 This will be translated to a bool variable in the sketch. You will need to set the topic value either to "on" or "off". During normal operation, this Topic needs to be set to "off". If you want to run an OTA-update on your ESP, set it to "on" (retained).  
 After a successful update, the ESP will reset this flag to "off".
 
-* `topic/tree/OTAinProgress` - default retained Message: **off**  
+* `topic/tree/OTAinProgress` - default **retained** Message: **off**  
 This is a helper flag topic required by the ESP.
 
 * `topic/tree/OTAstatus` - default Message: none  
@@ -28,7 +28,7 @@ The ESP will publish OTA status strings here. No need to pre-create this topic, 
 
 * `topic/tree/Vbat` - default Message: none  
 The sketch will publish the voltage measured on the configured ADC pin here. Note that we do not subscribe to this topic, we only publish to it.  
-**ATTENTION**: I'm unsure if reading the battery voltage works correctly - not yet tested (had some problems in the past with voltage readings on ESP32).
+**NOTE**: Reading VCC seems to work fine on WEMOS S2 Mini boards with external voltage divider (12k / 3k6) as well as an 100nF ceramtic capacitor attached between the ADC pin and GND. It is also possible to read VCC through a GPIO pin set to output HIGH, the results are the same as reading VCC directly (in my tests). This will help you save power in DeepSleep, so you don't have current running through the ADC voltage divider all the time.
 
 * `topic/tree/SleepUntil` - default Message: none  
 If `SLEEP_UNTIL` is enabled in `platformio.ini`, you can send a message containing a unix epoch time value (32bit signed long, encoded in hexadecimal base) to this topic and the ESP will sleep until the set time, supposed that a valid NTP time has been received and the given wake-up-time is in the future. The message may start with "0x", upper and lower case supported.
@@ -175,6 +175,6 @@ Initial Release
 - Added `wifi_up()` and `wifi_down()` functions which handle everything to bring networking/MQTT/NTP/OTA-flashing up and down
 
 ## Release v1.3.1
-- Extended MQTT-Subscriptions with type "string" (char array)
+- Extended MQTT-Subscriptions with type `string` (char array)
 - Switched `MsgRcvd` from type `bool` to `uint32_t` to be able to keep track if new messages arrive for subscribed topics (increases on new message arrival)
 - Minor bugfixes
