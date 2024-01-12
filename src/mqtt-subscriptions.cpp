@@ -16,9 +16,10 @@
 //          1 = integer (int)
 //          2 = float
 //          3 = time_t (decoded as hex! message may start with "0x", upper/lower chars supported)
-// .Subscribed: flag, true if successfully subscribed to topic
-// .MsgRcvd: flag, true if a message has been received for subscribed topic
-// .[Bool|Int|Float]Ptr: Pointer to a global var (according to "Type") where the decoded message info will be stored 
+//          4 = string (length limited to MQTT_MAX_MSG_SIZE!)
+// .Subscribed: flag, true if successfully subscribed to topic (needs to be initialized as FALSE here!)
+// .MsgRcvd: Counts messages received for subscribed topic (needs to be initialized with 0 here!)
+// .[Bool|Int|Float|Time|string]Ptr: Pointer to a global var (according to "Type") where the decoded message info will be stored 
 //
 
 #ifdef SLEEP_UNTIL
@@ -29,8 +30,8 @@ const int SubscribedTopicCnt = 2; // Overall amount of topics to subscribe to
 
 MqttSubCfg MqttSubscriptions[SubscribedTopicCnt]={
 #ifdef SLEEP_UNTIL
-    {.Topic = sleep_until_topic, .Type = 3, .Subscribed = false, .MsgRcvd = false, .TimePtr = &SleepUntilEpoch },
+    {.Topic = sleep_until_topic, .Type = 3, .Subscribed = false, .MsgRcvd = 0, .TimePtr = &SleepUntilEpoch },
 #endif
-    {.Topic = ota_topic, .Type = 0, .Subscribed = false, .MsgRcvd = false, .BoolPtr = &OTAupdate },
-    {.Topic = otaInProgress_topic, .Type = 0, .Subscribed = false, .MsgRcvd = false, .BoolPtr = &OtaInProgress }
+    {.Topic = ota_topic, .Type = 0, .Subscribed = false, .MsgRcvd = 0, .BoolPtr = &OTAupdate },
+    {.Topic = otaInProgress_topic, .Type = 0, .Subscribed = false, .MsgRcvd = 0, .BoolPtr = &OtaInProgress }
 };

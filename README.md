@@ -87,7 +87,7 @@ If you run Windows, make sure that your local firewall (where you run VSC) allow
 To add your own functionality to the template, you will need to adopt the following files:  
 
 * `include/mqtt-ota-config.h`  
-Update the `TOPTREE` to your needs.  
+Update the `TOPTREE` to your needs. If required, adopt `MQTT_MAX_MSG_SIZE` as needed (defaults to 20 bytes). These defines may also be set in `user_config.h`, which will override the settings in this file.   
 
 * `include/user-config.h`  
 Define/declare your topics along with required global vars and libs here.  
@@ -98,7 +98,7 @@ Add your desired functionality to the `user_loop` and `user_setup` functions.
 * `src/mqtt-subscriptions.cpp`  
 Add an array element to the `MqttSubscriptions` struct array, in example:  
 ```
-{.Topic = ota_topic, .Type = 0, .Subscribed = false, .MsgRcvd = false, .BoolPtr = &OTAupdate }
+{.Topic = ota_topic, .Type = 0, .Subscribed = false, .MsgRcvd = 0, .BoolPtr = &OTAupdate }
 ```
 The following data types are supported (parameter `Type`):
 * **BOOL (Type = 0)**
@@ -111,7 +111,11 @@ Use the `.IntPtr` to point to a global `int` variable. The String function `.toI
 Use the `.FloatPtr` to point to a global `float` variable. The String function `.toFloat()` will be used to decode the message to a float value. Make sure to use dots as decimal point in your messages.  
 
 * **time_t (Type = 3)**
-Use the `.TimePtr` to point to a global `time_t` variable. The function `strtol(msgString.c_str(), NULL, 16)` will be used to decode the message to a time_t value. Message will be decoded from a **hexadecimal base**, "0x" prefix optional, upper and lower case supported.  
+Use the `.TimePtr` to point to a global `time_t` variable, which can hold a Unix epoch timestamp. The function `strtol(msgString.c_str(), NULL, 16)` will be used to decode the message to a `time_t` value. Message will be decoded from a **hexadecimal base**, "0x" prefix optional, upper and lower case supported.  
+
+* **char array / string (Type = 4)**
+Use the `.stringPtr` to point to a global `char array` variable. The function `strcp` will be used to directly copy the message payload (extended with a null terminator) to a char arry.
+**Attention**: Initialize your char array with `MQTT_MAX_MSG_SIZE`, which is defined in `mqtt-ota-topic.h`.
 
 
 ### Note on delays and MQTT communication
@@ -163,8 +167,14 @@ Initial Release
 - Added optional SNTP client support (enable in `platformio.ini`, configure in `time-config.h`)
 - Added optional support to sleep until a given epoch time (enable in `platformio.ini`)
 - Added option to measure DeepSleep time to decrease clock skew during sleep (enable in `time-config.h`)
+- Extended MQTT-Subscriptions with type `time_t`
 - Added option to use the more precise 8MHz/256 clock for the RTC, which should decrease time-drifts during DeepSleep (increases DeepSleep current for 5-20µA however)
 - `user_loop` runtime dependent delay now configurable in `platformio.ini`
 - Enable / Tested VCC readouts on ADC1_2 (GPIO3) for S2-Mini boards (Tested with [ESP-Mini-Base](https://github.com/juepi/ESP-Mini-Base))
 - Added option to start with WiFi disabled (enable in `platformio.ini`)
 - Added `wifi_up()` and `wifi_down()` functions which handle everything to bring networking/MQTT/NTP/OTA-flashing up and down
+
+## Release v1.3.1
+- Extended MQTT-Subscriptions with type "string" (char array)
+- Switched `MsgRcvd` from type `bool` to `uint32_t` to be able to keep track if new messages arrive for subscribed topics (increases on new message arrival)
+- Minor bugfixes

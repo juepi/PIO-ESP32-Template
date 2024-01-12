@@ -18,7 +18,7 @@ const int NetFailAction = NET_OUTAGE;
 unsigned long NetRecoveryMillis = 0;
 
 // Define MQTT and OTA-update Variables
-char message_buff[20];
+char message_buff[MQTT_MAX_MSG_SIZE];
 bool OTAupdate = false;
 bool SentUpdateRequested = false;
 bool OtaInProgress = false;

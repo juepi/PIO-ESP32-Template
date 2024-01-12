@@ -85,8 +85,8 @@ void loop()
       mqttClt.publish(vcc_topic, String(VCC).c_str(), true);
       delay(150);
       Next_Mqtt_Publish = millis() + (MQTT_PUB_INTERVAL * 1000);
+      DEBUG_PRINTLN("VCC = " + String(VCC) + " V");
     }
-    DEBUG_PRINTLN("VCC = " + String(VCC) + " V");
 #endif
 #ifdef NTP_CLT
     // Update time variables with a timeout of 200ms
