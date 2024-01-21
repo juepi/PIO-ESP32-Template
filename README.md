@@ -178,3 +178,7 @@ Initial Release
 - Extended MQTT-Subscriptions with type `string` (char array)
 - Switched `MsgRcvd` from type `bool` to `uint32_t` to be able to keep track if new messages arrive for subscribed topics (increases on new message arrival)
 - Minor bugfixes
+
+## Release v1.3.2
+- Fixed bug in handling `EpochTime` and `TimeInfo` variables, they are now also updated when WiFi is off
+- Minor improvement to allow re-defining MQTT settings in `user-config.h` to allow over-writing `mqtt-ota-config.h` when upgrading the framework

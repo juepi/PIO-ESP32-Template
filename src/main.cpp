@@ -88,36 +88,37 @@ void loop()
       DEBUG_PRINTLN("VCC = " + String(VCC) + " V");
     }
 #endif
+  }
 #ifdef NTP_CLT
-    // Update time variables with a timeout of 200ms
+  // Always update time variables, also when WiFi is off
+  time(&EpochTime);
+  getLocalTime(&TimeInfo, 200);
+  if (TimeInfo.tm_year > 2023)
+  {
+    // System time is in the past, somethings wrong - retry
     getLocalTime(&TimeInfo, 200);
-    time(&EpochTime);
-    if (EpochTime < 1704300000)
+    if (TimeInfo.tm_year > 2023)
     {
-      // System time is in the past, somethings wrong - retry
-      getLocalTime(&TimeInfo, 200);
-      time(&EpochTime);
-      if (EpochTime < 1704300000)
-      {
-        DEBUG_PRINTLN("Wrong system time, invalidating local time and retry in next loop");
-        NTPSyncCounter = 0;
-      }
+      DEBUG_PRINTLN("Wrong system time, invalidating local time and retry in next loop");
+      NTPSyncCounter = 0;
     }
+  }
+  // Prints formatted date and time
+  // DEBUG_PRINTLN(&TimeInfo, "%A, %B %d %Y %H:%M:%S");
 #endif
 #ifdef MEASURE_SLEEP_CLOCK_SKEW
-    static bool SkewDataSent = false;
-    if (esp_reset_reason() == ESP_RST_DEEPSLEEP)
+  static bool SkewDataSent = false;
+  if (esp_reset_reason() == ESP_RST_DEEPSLEEP)
+  {
+    // Woke up from deepsleep, output some helpers to allow calculation of SLEEPT_CORR_FACT
+    if (NTPSyncCounter > 0 && !SkewDataSent)
     {
-      // Woke up from deepsleep, output some helpers to allow calculation of SLEEPT_CORR_FACT
-      if (NTPSyncCounter > 0 && !SkewDataSent)
-      {
-        mqttClt.publish(boot_dur_topic, String(millis()).c_str(), false);
-        mqttClt.publish(end_sleep_topic, String(EpochTime).c_str(), false);
-        SkewDataSent = true;
-      }
+      mqttClt.publish(boot_dur_topic, String(millis()).c_str(), false);
+      mqttClt.publish(end_sleep_topic, String(EpochTime).c_str(), false);
+      SkewDataSent = true;
     }
-#endif
   }
+#endif
 
 //
 // Handle user_loop

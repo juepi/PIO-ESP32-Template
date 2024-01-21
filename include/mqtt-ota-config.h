@@ -20,6 +20,7 @@
 #define MAXCONNATTEMPTS 3
 // Message buffer for incoming Data from MQTT subscriptions
 // increase if you receive larger messages for subscribed topics
+// alternatively defined in user-config.h
 #ifndef MQTT_MAX_MSG_SIZE
 #define MQTT_MAX_MSG_SIZE 20
 #endif
@@ -27,6 +28,7 @@ extern char message_buff[MQTT_MAX_MSG_SIZE];
 
 // MQTT Topic Tree prepended to all topics
 // ATTN: Must end with "/"!
+// alternatively defined in user-config.h
 #ifndef TOPTREE
 #define TOPTREE "HB7/Test/"
 #endif

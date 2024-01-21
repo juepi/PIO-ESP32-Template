@@ -1,6 +1,6 @@
 /*
  *   ESP32 Template
- *   User specific defines and Function declarations
+ *   User specific configuration, defines and Function declarations
  */
 #ifndef USER_CONFIG_H
 #define USER_CONFIG_H
