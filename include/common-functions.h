@@ -25,5 +25,6 @@ extern void wifi_down();
 // Declare common global vars
 //
 extern bool JustBooted;
+extern bool DelayDeepSleep;
 
 #endif // COMMON_FUNCTIONS_H

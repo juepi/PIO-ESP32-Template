@@ -6,6 +6,7 @@
 
 // Define generic global vars
 bool JustBooted = true; // Helper to let you know you're running the first iteration of the main loop()
+bool DelayDeepSleep = false; // skips DeepSleep execution in main loop when true
 // Define WiFi Variables
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PSK;

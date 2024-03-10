@@ -182,3 +182,6 @@ Initial Release
 ## Release v1.3.2
 - Fixed bug in handling `EpochTime` and `TimeInfo` variables, they are now also updated when WiFi is off
 - Minor improvement to allow re-defining MQTT settings in `user-config.h` to allow over-writing `mqtt-ota-config.h` when upgrading the framework
+
+## Release v1.3.3
+- Added ability to delay DeepSleep (either `E32_DEEP_SLEEP`or `SLEEP_UNTIL`); as long as `DelayDeepSleep` flag is `true`, the framework will keep looping

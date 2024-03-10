@@ -142,7 +142,7 @@ void loop()
 // Handle SleepUntil
 //
 #ifdef SLEEP_UNTIL
-  if (NTPSyncCounter > 0 && EpochTime < SleepUntilEpoch)
+  if (NTPSyncCounter > 0 && EpochTime < SleepUntilEpoch && !DelayDeepSleep)
   {
     time(&EpochTime);
     // System time synced and received sleep-until time in the future -> OK!
@@ -164,10 +164,13 @@ void loop()
 // Handle DeepSleep
 //
 #ifdef E32_DEEP_SLEEP
-  // disconnect WiFi and go to sleep
-  DEBUG_PRINTLN("Good night for " + String(DS_DURATION_MIN) + " minutes.");
-  wifi_down();
-  esp_deep_sleep((uint64_t)DS_DURATION_MIN * 60000000);
+  if (!DelayDeepSleep)
+  {
+    // disconnect WiFi and go to sleep
+    DEBUG_PRINTLN("Good night for " + String(DS_DURATION_MIN) + " minutes.");
+    wifi_down();
+    esp_deep_sleep((uint64_t)DS_DURATION_MIN * 60000000ULL);
+  }
 #endif
 
   // First iteration of main loop finished
