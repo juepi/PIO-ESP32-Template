@@ -181,7 +181,11 @@ Initial Release
 
 ## Release v1.3.2
 - Fixed bug in handling `EpochTime` and `TimeInfo` variables, they are now also updated when WiFi is off
-- Minor improvement to allow re-defining MQTT settings in `user-config.h` to allow over-writing `mqtt-ota-config.h` when upgrading the framework
+- Minor improvement to allow re-defining MQTT settings in `user-config.h` to allow over-writing `mqtt-ota-config.h` when upgrading to a new framework version
 
 ## Release v1.3.3
 - Added ability to delay DeepSleep (either `E32_DEEP_SLEEP`or `SLEEP_UNTIL`); as long as `DelayDeepSleep` flag is `true`, the framework will keep looping
+- `JustBooted` global flag available; `true` when running main loop for the first time, then set to `false`
+
+## WiP v1.4.0
+- Support new ESP32-C6 (Mini) boards using Espressif IDF v5.x release (**NOTE:** creates 250kB larger firmware binaries probably due to new features like WPA3 and IPv6!); this is WiP, mostly untested (no hardware yet)

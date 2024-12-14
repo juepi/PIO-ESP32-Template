@@ -65,6 +65,7 @@ void hardware_setup()
 
 // Disable all power domains on ESP while in DeepSleep (actually Hibernation)
 // wake up only by RTC timer
+#ifndef ESP32C6 // TODO for ESP32-C6
 #ifdef KEEP_RTC_SLOWMEM
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
 #else
@@ -72,19 +73,28 @@ void hardware_setup()
 #endif
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+#endif //ESP32-C6
 #ifdef SLEEP_RTC_CLK_8M
+#ifndef ESP32C6
     // Enable 8MHz/256 oscillator
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC8M, ESP_PD_OPTION_ON);
     rtc_slow_freq_t rtcSlowFreq = RTC_SLOW_FREQ_8MD256;
     rtc_clk_8m_enable(true, true);
     rtc_clk_slow_freq_set(rtcSlowFreq);
+#else
+    // Enable 8MHz/256 oscillator
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_ON);
+    rtc_clk_8m_enable(true);
+#endif
 #endif
 #if defined SLEEP_UNTIL || defined E32_DEEP_SLEEP
+#ifndef ESP32C6 // TODO for ESP32-C6
     // Measure clock period of RTC slow clock, add correction and save to RTC register
     uint32_t rtcClkPeriod = (uint32_t)(0.5 + rtc_clk_cal(RTC_CAL_RTC_MUX, 1024));
     uint32_t rtcClkPeriodCalib = rtcClkPeriod * CLK_CORR_FACTOR;
     REG_WRITE(RTC_CNTL_STORE1_REG, rtcClkPeriodCalib);
     delay(10);
+#endif
 #endif
 }
 
