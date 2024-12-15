@@ -136,6 +136,7 @@ void loop()
   }
 #else
   user_loop();
+  yield();
 #endif
 
 //

@@ -61,6 +61,7 @@ extern const char* time_zone;
 // Correction factor for 150kHz / 8Mhz oscillator to compensate clock skew during ESP sleep
 // the default 150kHz oscillator is highly inaccurate and temperature-unstable, be aware that correction probably won't work well!
 // TODO: automatically re-calculate factor after sleep and store in RTC_SLOWMEM
+// NOTE: Not supported (ignored) for ESP32-C6!
 #ifdef SLEEP_RTC_CLK_8M
 #define CLK_CORR_FACTOR 1.003170777577f
 #else
@@ -75,6 +76,7 @@ extern const char* time_zone;
 // ESP sleeps too short, factor needs to be decreased
 // ESP sleeps too long, factor needs to be increased
 // ATTN: MEASURE_SLEEP_CLOCK_SKEW requires SLEEP_UNTIL option!
+// NOTE: Not supported for ESP32-C6!
 //#define MEASURE_SLEEP_CLOCK_SKEW
 #endif
 
