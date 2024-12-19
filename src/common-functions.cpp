@@ -52,7 +52,9 @@ bool MqttConnectToBroker()
                     }
                 }
             }
-            delay(200);
+            delay(100);
+            mqttClt.loop();
+            yield();
             break;
         }
         else
@@ -337,7 +339,7 @@ void MqttCallback(char *topic, byte *payload, unsigned int length)
                 break;
             case 4:
                 // Handle subscriptions of type string (copy from message_buff)
-                strcpy(MqttSubscriptions[i].stringPtr,message_buff);
+                strcpy(MqttSubscriptions[i].stringPtr, message_buff);
                 MqttSubscriptions[i].MsgRcvd++;
                 break;
             }

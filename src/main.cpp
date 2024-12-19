@@ -21,6 +21,7 @@ void loop()
   static unsigned long duration_user_loop = 0;
 #endif
   static unsigned long netfail_reconn_millis = 0;
+  static unsigned int netfail_reconn_tries = 0;
 
 //
 // Handle local tasks
@@ -44,21 +45,33 @@ void loop()
     // Currently no network available, try to recover
     if (millis() >= netfail_reconn_millis)
     {
-      if (WiFi.isConnected())
+      if (!WiFi.isConnected())
       {
-        // Try to reconnect to Broker
-        MqttUpdater();
+        // WiFi down, try to restart WiFi
+        wifi_down();
+        delay(100);
+        wifi_up();
+        delay(100);
       }
+      // and try to reconnect to Broker
+      MqttUpdater();
       if (NetState == NET_FAIL)
       {
-        // Still no network available, try to recover every NET_RECONNECT_INTERVAL
+        // Still no network/broker available, wait for NET_RECONNECT_INTERVAL
         netfail_reconn_millis = millis() + NET_RECONNECT_INTERVAL;
+        netfail_reconn_tries++;
+        if (netfail_reconn_tries > MAX_NETFAIL_RECONN)
+        {
+          // we've tried long enough, let's reset the ESP!
+          ESP.restart();
+        }
       }
       else
       {
         // Recovered from network outage
         NetRecoveryMillis = millis();
         netfail_reconn_millis = 0;
+        netfail_reconn_tries = 0;
       }
     }
   }
