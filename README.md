@@ -193,3 +193,4 @@ Initial Release
 - Added option to reset ESP after configurable network downtime / broker unreachability (see `wifi-config.h`)
 - During a net outage, try to recover with a `wifi-down()` and `wifi-up()` when WiFi is disconnected
 - Minor improvement in `MqttConnectToBroker` function
+- Added uptime counter (global var `UptimeSeconds`)

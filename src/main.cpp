@@ -22,6 +22,15 @@ void loop()
 #endif
   static unsigned long netfail_reconn_millis = 0;
   static unsigned int netfail_reconn_tries = 0;
+  // Uptime calculation
+  static unsigned long oldMillis = 0;
+
+  // Handle Uptime counter
+  if ((millis() - oldMillis) >= 1000)
+  {
+    oldMillis = millis();
+    UptimeSeconds++;
+  }
 
 //
 // Handle local tasks

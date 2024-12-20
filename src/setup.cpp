@@ -5,8 +5,9 @@
 #include "setup.h"
 
 // Define generic global vars
-bool JustBooted = true; // Helper to let you know you're running the first iteration of the main loop()
+bool JustBooted = true;      // Helper to let you know you're running the first iteration of the main loop()
 bool DelayDeepSleep = false; // skips DeepSleep execution in main loop when true
+uint32_t UptimeSeconds = 0;  // Uptime counter
 // Define WiFi Variables
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PSK;
@@ -73,7 +74,7 @@ void hardware_setup()
 #endif
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
-#endif //ESP32-C6
+#endif // ESP32-C6
 #ifdef SLEEP_RTC_CLK_8M
 #ifndef ESP32C6
     // Enable 8MHz/256 oscillator

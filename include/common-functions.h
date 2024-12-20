@@ -26,5 +26,6 @@ extern void wifi_down();
 //
 extern bool JustBooted;
 extern bool DelayDeepSleep;
+extern uint32_t UptimeSeconds;
 
 #endif // COMMON_FUNCTIONS_H
