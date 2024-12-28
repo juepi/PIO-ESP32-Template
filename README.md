@@ -188,9 +188,12 @@ Initial Release
 - `JustBooted` global flag available; `true` when running main loop for the first time, then set to `false`
 
 ## WiP v1.4.0
-- Support new ESP32-C6 (Mini) boards using Espressif IDF v5.x release (**NOTE:** creates 250kB larger firmware binaries probably due to new features like WPA3 and IPv6!); this is WiP, mostly untested (no hardware yet)
+- Support new ESP32-C6 (Mini) boards using Espressif IDF v5.x release (**NOTE:** creates 250kB larger firmware binaries probably due to new features like WPA3 and IPv6!); this is WiP, compilation, WiFI and serial monitor work, rest untested yet
 - changed default 4MB partition scheme for ESP32-C6 to maximize available flash for application (~1.9MB instead of ~1.3MB); this minimizes available SPIFFS partition to 132kB
 - Added option to reset ESP after configurable network downtime / broker unreachability (see `wifi-config.h`)
 - During a net outage, try to recover with a `wifi-down()` and `wifi-up()` when WiFi is disconnected
 - Minor improvement in `MqttConnectToBroker` function
 - Added uptime counter (global var `UptimeSeconds`)
+- Fixed serial monitor output for ESP32-C6
+- Fixed ESP32-C6 compilation errors (see `platformio.ini` settings in `[platformio]` section if you run into "file not found" errors when compiling in Windows OS)
+- Switched ESP32-C6 board to correct one with 4MB flash
