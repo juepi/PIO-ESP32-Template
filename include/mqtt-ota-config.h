@@ -36,6 +36,11 @@ extern char message_buff[MQTT_MAX_MSG_SIZE];
 // Default interval to publish MQTT data in seconds (currently used for VCC if enabled)
 #define MQTT_PUB_INTERVAL 900
 
+// Default QoS for MQTT subscriptions (see platformio.ini)
+#ifndef SUB_QOS
+#define SUB_QOS 0
+#endif
+
 //
 // OTA-Update MQTT Topics and corresponding global vars
 //

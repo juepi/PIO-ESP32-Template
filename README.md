@@ -205,3 +205,5 @@ Initial Release
 - Fixed serial monitor output for ESP32-C6
 - Fixed ESP32-C6 compilation errors (see `platformio.ini` settings in `[platformio]` section if you run into "file not found" errors when compiling in Windows OS)
 - Switched ESP32-C6 board to correct one with 4MB flash
+- Fixed possible endless loop if connection to broker fails while subscribing to MQTT topics
+- Added config define to set QoS for MQTT subscriptions (see `SUB_QOS` in `platformio.ini`)

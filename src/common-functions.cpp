@@ -18,44 +18,58 @@ void ToggleLed(int PIN, int WaitTime, int Count)
 // Function to connect to MQTT Broker and subscribe to Topics
 bool MqttConnectToBroker()
 {
-    // Reset subscribed/received Topics counters
-    int SubscribedTopics = 0;
-    for (int i = 0; i < SubscribedTopicCnt; i++)
-    {
-        MqttSubscriptions[i].Subscribed = false;
-        MqttSubscriptions[i].MsgRcvd = 0;
-    }
     bool RetVal = false;
     int ConnAttempt = 0;
     // Try to connect x times, then return error
     while (ConnAttempt < MAXCONNATTEMPTS)
     {
         DEBUG_PRINT("Connecting to MQTT broker..");
-        // Attempt to connect
         if (mqttClt.connect(MQTT_CLTNAME))
         {
             DEBUG_PRINTLN("connected");
-            RetVal = true;
-
+            // Reset subscribed/received Topics counters
+            int SubscribedTopics = 0;
+            for (int i = 0; i < SubscribedTopicCnt; i++)
+            {
+                MqttSubscriptions[i].Subscribed = false;
+                MqttSubscriptions[i].MsgRcvd = 0;
+            }
             // Subscribe to all configured Topics
-            while (SubscribedTopics < SubscribedTopicCnt)
+            while ((SubscribedTopics < SubscribedTopicCnt) && mqttClt.connected())
             {
                 for (int i = 0; i < SubscribedTopicCnt; i++)
                 {
+                    // Make sure broker is still connected to avoid looping endlessly
+                    if (!mqttClt.connected())
+                    {
+                        DEBUG_PRINTLN("Lost connection while subscribing to topics, reconnecting!");
+                        break;
+                    }
                     if (!MqttSubscriptions[i].Subscribed)
                     {
-                        if (mqttClt.subscribe(MqttSubscriptions[i].Topic))
+                        if (mqttClt.subscribe(MqttSubscriptions[i].Topic,SUB_QOS))
                         {
                             MqttSubscriptions[i].Subscribed = true;
                             SubscribedTopics++;
+                            yield();
                         }
                     }
                 }
             }
-            delay(100);
-            mqttClt.loop();
-            yield();
-            break;
+            if (SubscribedTopics == SubscribedTopicCnt)
+            {
+                // All done
+                mqttClt.loop();
+                delay(100);
+                RetVal = true;
+                break;
+            }
+            else
+            {
+                DEBUG_PRINTLN("Something went wrong, restarting..");
+                delay(1000);
+                ConnAttempt++;
+            }
         }
         else
         {
@@ -131,6 +145,7 @@ void MqttUpdater()
     else
     {
         mqttClt.loop();
+        yield();
     }
 }
 
