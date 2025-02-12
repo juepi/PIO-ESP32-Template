@@ -63,7 +63,10 @@ void loop()
         delay(100);
       }
       // and try to reconnect to Broker
-      MqttUpdater();
+      if (WiFi.isConnected())
+      {
+        MqttUpdater();
+      }
       if (NetState == NET_FAIL)
       {
         // Still no network/broker available, wait for NET_RECONNECT_INTERVAL
