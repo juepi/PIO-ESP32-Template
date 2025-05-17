@@ -132,12 +132,12 @@ This was the behavior until v1.1.0. Reboot ESP until the network or broker conne
 This will keep the firmware running even without a network connection. It will automatically try to recover the connection to the MQTT broker every `NET_RECONNECT_INTERVAL` (configurable in `wifi_config.h`, defaults to 1 minute). The firmware will also boot without a broker being available, thus you have to make sure that you have **suitable default values programmed into your firmware wherever needed**.
 
 ## Note on using newer ESP32 chips (ESP32-C6)
-As of version `1.4.0`, the template supports most recent ESP32 chips (tested with ESP32-C6) which are **no longer supported by PlatformIO** due to bickering between the PIO team and Espressif.
+As of version `1.4.0`, the template supports most recent ESP32 chips (tested with ESP32-C6) which are **no longer supported by PlatformIO using the Arduino framework** due to bickering between the PIO team and Espressif.  
 Note that these chips require a fork of PIO, named [pioarduino](https://github.com/pioarduino/pioarduino-vscode-ide). At the time of writing, it is not necessary to remove PlatformIO VSC extension and install pioarduino, instead it is enough to use the following platform in the `platformio.ini` file:
 ```
 platform = https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip
 ```
-Do note that this setup is rather unstable. If you want to move back to the original `platform = espressif32` in your `platformio.ini`, it is possible that you have to remove the whole `%USERPROFILE%\.platformio` from your system. Else you might run into an issue that all seems to build and upload well (in example an a ESP32-S2), but the firmware will not boot.
+Do note that this setup is rather unstable. If you want to move back to the original `platform = espressif32` in your `platformio.ini`, it is possible that you have to remove the whole `%USERPROFILE%\.platformio` from your system. Else you might run into an issue that all seems to build and upload well (in example on an ESP32-S2), but the firmware will not boot.
 
 
 # Version History
