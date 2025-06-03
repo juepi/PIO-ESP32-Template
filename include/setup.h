@@ -22,8 +22,10 @@
 extern void wifi_setup();
 extern void ota_setup();
 extern void hardware_setup();
-extern void ntp_setup();
 extern void setup();
+#ifdef NTP_CLT
+extern void ntp_setup();
+#endif
 
 // Declare global objects
 extern WiFiClient WiFiClt;
